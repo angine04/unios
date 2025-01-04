@@ -153,3 +153,5 @@ obj/*
 
 !.vscode/settings.json
 !/libgcc*.a
+
+.idea/
