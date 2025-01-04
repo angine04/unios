@@ -5,6 +5,8 @@ PROJMK_PREFIX ?=
 all: image kernel tools
 .PHONY: all
 
+
+ifneq ($(shell uname),Darwin)
 include $(PROJMK_PREFIX)rules-gen.mk
 include $(PROJMK_PREFIX)rules-obj.mk
 include $(PROJMK_PREFIX)rules-asbin.mk
@@ -14,6 +16,7 @@ include $(PROJMK_PREFIX)rules-kernel.mk
 include $(PROJMK_PREFIX)rules-image.mk
 include $(PROJMK_PREFIX)rules-tools.mk
 include $(PROJMK_PREFIX)rules-deps.mk
+endif
 
 $(OBJDIR)compile_commands.json: force
 	@$(call begin-job,dump,$(notdir $@))
