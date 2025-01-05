@@ -194,10 +194,28 @@ void page_fault_handler(
     kinfo("[#PF.%d] leave page fault handler", id);
 }
 
+
+#pragma GCC push_options
+#pragma GCC optimize("O3")
+
+uint32_t pg_laddr_phyaddr(uint32_t cr3, uint32_t laddr) {
+    uint32_t pde = pg_pde(cr3, laddr);
+    uint32_t pte = pg_pte(pde, laddr);
+    return pg_frame_phyaddr(pte) | pg_offset(laddr);
+}
+
+bool pg_addr_pte_exist(uint32_t cr3, uint32_t laddr) {
+    uint32_t pde = pg_pde(cr3, laddr);
+    if ((pde & PG_MASK_P) != PG_P) { return false; }
+    return pg_pte_exist(pde, laddr);
+}
+
+#pragma GCC pop_options
+
 bool pg_create_and_init(uint32_t *p_cr3) {
     assert(p_cr3 != NULL);
     uint32_t cr3 = kmalloc_phypage();
-    //! NOTE: cr3 should only comes from pg_create_and_init and is always
+    //! NOTE: cr3 should only come from pg_create_and_init and is always
     //! non-zero
     if (cr3 == 0) { return false; }
     assert(cr3 == pg_frame_phyaddr(cr3));
@@ -232,19 +250,40 @@ bool pg_create_and_init(uint32_t *p_cr3) {
     return true;
 }
 
-#pragma GCC push_options
-#pragma GCC optimize("O3")
 
-uint32_t pg_laddr_phyaddr(uint32_t cr3, uint32_t laddr) {
-    uint32_t pde = pg_pde(cr3, laddr);
-    uint32_t pte = pg_pte(pde, laddr);
-    return pg_frame_phyaddr(pte) | pg_offset(laddr);
+bool pg_init_video(uint32_t *p_cr3, uint32_t video_bar, uint32_t size) {
+    kinfo("pg_init_video: Mapping video memory\n");
+    assert(p_cr3 != NULL);
+    uint32_t cr3 = kmalloc_phypage();
+    //! NOTE: cr3 should only come from pg_create_and_init and is always
+    //! non-zero
+    if (cr3 == 0) { return false; }
+    assert(cr3 == pg_frame_phyaddr(cr3));
+    memset(K_PHY2LIN(cr3), 0, NUM_4K);
+    bool should_rollback = false;
+    uint32_t base    = video_bar;
+    uint32_t limit   = video_bar + size;
+    kinfo("pg_init_video: base=%p, limit=%p\n", base, limit);
+    uint32_t laddr   = base;
+    uint32_t phyaddr = base;
+    while (laddr < limit) {
+        bool ok = pg_map_laddr(
+            cr3, laddr, phyaddr, PG_P | PG_U | PG_RWX, PG_P | PG_S | PG_RWX);
+        if (!ok) {
+            should_rollback = true;
+            break;
+        }
+        laddr   += NUM_4K;
+        phyaddr += NUM_4K;
+    }
+    if (should_rollback) {
+        kwarn("pg_init_video: should rollback, unmap video memory\n");
+        pg_unmap_laddr_range(cr3, base, limit, false);
+        return false;
+    } else {
+        pg_refresh();
+    }
+    *p_cr3 = cr3;
+    kinfo("pg_init_video: done\n");
+    return true;
 }
-
-bool pg_addr_pte_exist(uint32_t cr3, uint32_t laddr) {
-    uint32_t pde = pg_pde(cr3, laddr);
-    if ((pde & PG_MASK_P) != PG_P) { return false; }
-    return pg_pte_exist(pde, laddr);
-}
-
-#pragma GCC pop_options
