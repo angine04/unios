@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include <pci.h>
+#include <unios/pci.h>
 #include <unios/memory.h>
 #include <unios/proc.h>
 #include <unios/protect.h>

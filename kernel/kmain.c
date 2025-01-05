@@ -9,7 +9,7 @@
 #include <unios/fs.h>
 #include <unios/tracing.h>
 #include <unios/assert.h>
-#include <pci.h>
+#include <unios/pci.h>
 #include <unios/display.h>
 
 extern void init();
