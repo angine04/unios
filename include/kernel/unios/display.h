@@ -1,5 +1,6 @@
 #pragma once
 #include <unios/pci.h>
+#include <lib/stdbool.h>
 #include <lib/stdint.h>
 
 #define BGA_SWAP_BUFFERS    0x0101
@@ -12,9 +13,14 @@
 #define BGA_SET_UPDATE      0x0108
 #define BGA_GET_BUFFER      0x0109
 
+#define DISPLAY_WIDTH       1440
+#define DISPLAY_HEIGHT      810
+
 //！ We are using only bga as a display device
 //！ because we are using qemu simulator
 //！ and it is assumed that bga is available
+
+bool display_available;
 
 /*!
  * \brief init bga

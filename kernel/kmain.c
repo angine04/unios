@@ -63,8 +63,10 @@ void kernel_main() {
     // and it is assumed that bga is available
     pci_dev_t* dev_display = get_pci_bga();
     if (dev_display != NULL) {
-        init_display(dev_display);
+        display_available = init_display(dev_display) == 0;
     }
+
+    kinfo("init display done");
 
     p_proc_current = proc_table[0];
     restart_initial();

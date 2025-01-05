@@ -158,7 +158,7 @@ int init_display(pci_dev_t *dev) {
         return -1;
     }
     bga_buf_paddr = pci_read_bar(dev, 0) & 0xfffffff0;
-    bga_set_resolution(1024, 768);
+    bga_set_resolution(DISPLAY_WIDTH, DISPLAY_HEIGHT);
     kinfo("bga buf paddr=%p; buf size= %d \n", bga_buf_paddr,
             bga_screen_buffer_size);
     uint32_t new_cr3 = rcr3();

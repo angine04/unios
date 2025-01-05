@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
-
+#include <unios/display.h>
 
 static void init_setup_fs() {
     hd_open(PRIMARY_MASTER);
@@ -115,10 +115,17 @@ static void init_untar_user_progs() {
     kinfo("untar builtin user programs done");
 }
 
-void init_handle_new_tty() {
+void init_shell() {
     //! NOTE: block init proc reenter the shell init routine
     static int lock = 0;
     if (!try_lock(&lock)) { return; }
+
+    // if (display_available) {
+    //     release(&lock);
+    //     kinfo("display available, starting windows manager");
+    //     exec("wm");
+    //     unreachable();
+    // }
 
     int nr_tty = tty_wait_for();
     if (nr_tty == -1) {
@@ -141,8 +148,15 @@ void init_handle_new_tty() {
     tty_notify_shell();
     release(&lock);
 
-    printf("[TTY #%d]\n", nr_tty);
-    exec("shell_0");
+
+    if (!display_available) {
+        printf("[TTY #%d]\n", nr_tty);
+        exec("shell_0");
+    }else{
+        kinfo("display available, starting windows manager");
+        exec("wm");
+    }
+
     unreachable();
 }
 
@@ -152,7 +166,7 @@ void init() {
     init_untar_user_progs();
     init_enable_preinited_procs();
     while (true) {
-        init_handle_new_tty();
+        init_shell();
         yield();
     }
     unreachable();
