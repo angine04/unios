@@ -9,6 +9,8 @@
 #include <unios/fs.h>
 #include <unios/tracing.h>
 #include <unios/assert.h>
+#include <pci.h>
+#include <unios/display.h>
 
 extern void init();
 
@@ -50,6 +52,19 @@ void kernel_main() {
     kstate_reenter_cntr = 0;
     kstate_on_init      = false;
     kinfo("init kernel done");
+
+    // init bga
+    init_pci();
+    kinfo("init pci done");
+
+    // init display
+    // we get bga device as display device
+    // because we are using qemu simulator
+    // and it is assumed that bga is available
+    pci_dev_t* dev_display = get_pci_bga();
+    if (dev_display != NULL) {
+        init_display(dev_display);
+    }
 
     p_proc_current = proc_table[0];
     restart_initial();

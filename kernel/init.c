@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
-#include <pci.h>
+
 
 static void init_setup_fs() {
     hd_open(PRIMARY_MASTER);
@@ -19,10 +19,6 @@ static void init_setup_fs() {
     kinfo("init fs done");
 }
 
-static void init_setup_pci() {
-    init_pci();
-    kinfo("init pci done");
-}
 
 static void init_setup_envs() {
     const char *initial_envs = "PWD=/orange\n"
@@ -154,7 +150,6 @@ void init() {
     init_setup_fs();
     init_setup_envs();
     init_untar_user_progs();
-    init_setup_pci();
     init_enable_preinited_procs();
     while (true) {
         init_handle_new_tty();
