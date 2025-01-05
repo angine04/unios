@@ -14,6 +14,20 @@
 
 pci_dev_t pci_devs[NR_PCI_DEV];
 
+/*!
+ * \brief read bar
+ *
+ * \attention
+ * This function is used internally by the pci library
+ * and should not be used by other modules
+ *
+ * \param bus bus number
+ * \param device device number
+ * \param function function number
+ * \param bar_id bar id
+ *
+ * \return bar
+ */
 static uint32_t pci_internal_read_bar(uint8_t bus, uint8_t device, uint8_t function,
                                  uint8_t bar_id) {
     uint32_t header_type = pci_read(bus, device, function, 0x0e) & 0x7f;
@@ -153,3 +167,17 @@ uint32_t pci_read_bar(pci_dev_t* pci_dev, int bar_id) {
 }
 
 void init_pci() { pci_find_devices(); }
+
+pci_dev_t* get_pci_bga()
+{
+    kinfo("probing for display device\n");
+    for (int i = 0; i < NR_PCI_DEV; ++ i) {
+        if (pci_devs[i].type == DEVICE_DISPLAY) {
+            kinfo("display device found:\n");
+            kinfo("vendor: %x, device: %x\n", pci_devs[i].vendor_id, pci_devs[i].device_id);
+            return &pci_devs[i];
+        }
+    }
+    kwarn("display device not found\n");
+    return NULL;
+}

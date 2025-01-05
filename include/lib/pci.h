@@ -40,11 +40,61 @@ enum DEVICES_TYPE {
     DEVICE_UNKNOWN = (1 << 9),
 };
 
+
+/*!
+ * \brief read data from pci configuration space
+ *
+ * \param bus bus number
+ * \param device device number
+ * \param function function number
+ * \param offset offset
+ *
+ * \return data read from pci
+ */
 uint32_t pci_read(uint16_t bus, uint16_t device, uint16_t function, uint32_t offset);
+
+/*!
+ * \brief write data to pci configuration space
+ *
+ * \param bus bus number
+ * \param device device number
+ * \param function function number
+ * \param offset offset
+ * \param data data to write
+ */
 void pci_write(uint8_t bus, uint8_t device, uint8_t function, uint8_t offset, uint32_t data);
+
+/*!
+ * \brief get device descriptor
+ *
+ * \param bus bus number
+ * \param device device number
+ * \param function function number
+ *
+ * \return device descriptor
+ */
 pci_dev_t pci_get_device_desriptor(uint8_t bus, uint8_t device, uint8_t function);
+
+/*!
+ * \brief get bga device
+ *
+ * \return bga device
+ */
 pci_dev_t* get_pci_bga();
+
+/*!
+ * \brief read bar
+ *
+ * \param pci_dev pci device
+ * \param bar_id bar id
+ *
+ * \return bar
+ */
 uint32_t pci_read_bar(pci_dev_t* pci_dev, int bar_id);
+
+/*!
+ * \brief init pci
+ */
 void init_pci();
 
 #define NR_PCI_DEV  8
