@@ -61,7 +61,7 @@ void kernel_main() {
     // we get bga device as display device
     // because we are using qemu simulator
     // and it is assumed that bga is available
-    pci_dev_t* dev_display = get_pci_bga();
+    pci_dev_t *dev_display = get_pci_bga();
     if (dev_display != NULL) {
         display_available = init_display(dev_display) == 0;
     }

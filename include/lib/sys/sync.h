@@ -2,7 +2,7 @@
 
 #include <sys/types.h>
 
-#define INVALID_HANDLE ((handle_t)-1)
+#define INVALID_HANDLE ((handle_t) - 1)
 
 handle_t krnlobj_lookup(int user_id);
 handle_t krnlobj_create(int user_id);

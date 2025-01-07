@@ -166,7 +166,7 @@ int create(const char *path) {
     return syscall1(NR_create, (uint32_t)path);
 }
 
-int delete(const char *path) {
+int delete (const char *path) {
     return syscall1(NR_delete, (uint32_t)path);
 }
 
@@ -191,4 +191,8 @@ char *const *getenv() {
     char **envp = NULL;
     bool   ok   = syscall2(NR_environ, ENVIRON_GET, (uint32_t)&envp);
     return envp;
+}
+
+int putframe(void *buffer, size_t size, int pid) {
+    return syscall3(NR_putframe, (uint32_t)buffer, size, pid);
 }

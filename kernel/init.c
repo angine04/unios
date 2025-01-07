@@ -19,7 +19,6 @@ static void init_setup_fs() {
     kinfo("init fs done");
 }
 
-
 static void init_setup_envs() {
     const char *initial_envs = "PWD=/orange\n"
                                "PATH=/orange\n"
@@ -148,11 +147,10 @@ void init_shell() {
     tty_notify_shell();
     release(&lock);
 
-
     if (!display_available) {
         printf("[TTY #%d]\n", nr_tty);
         exec("shell_0");
-    }else{
+    } else {
         kinfo("display available, starting windows manager");
         exec("wm");
     }

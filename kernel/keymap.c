@@ -1,7 +1,7 @@
 #include <unios/keymap.h>
 
 #define KEYMAP_ENTRY(raw, no_shift_key, shift_key) \
-    { (raw), (no_shift_key), (shift_key) }
+    {(raw), (no_shift_key), (shift_key)}
 
 keymap_entry_t keymap[NR_SCAN_CODES] = {
     KEYMAP_ENTRY(0, 0, 0),                     //<! 0x00 - none

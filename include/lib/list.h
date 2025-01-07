@@ -8,8 +8,7 @@ struct list_head {
     struct list_head *prev, *next;
 };
 
-#define LIST_HEAD_INIT(name) \
-    { &(name), &(name) }
+#define LIST_HEAD_INIT(name) {&(name), &(name)}
 
 #define LIST_HEAD(name) struct list_head name = LIST_HEAD_INIT(name)
 
@@ -741,8 +740,7 @@ struct hlist_node {
  * You lose the ability to access the tail in O(1).
  */
 
-#define HLIST_HEAD_INIT \
-    { .first = NULL }
+#define HLIST_HEAD_INIT      {.first = NULL}
 #define HLIST_HEAD(name)     struct hlist_head name = {.first = NULL}
 #define INIT_HLIST_HEAD(ptr) ((ptr)->first = NULL)
 

@@ -116,7 +116,7 @@ enum msgtype {
 #define ROOT_INODE    1
 
 #define MAX_DRIVES        2
-#define NR_PART_PER_DRIVE 4 // 每块硬盘(驱动器)只能有4个主分区, mingxuan
+#define NR_PART_PER_DRIVE 4  // 每块硬盘(驱动器)只能有4个主分区, mingxuan
 #define NR_SUB_PER_PART   16 // 每个扩展分区最多有16个逻辑分区, mingxuan
 #define NR_SUB_PER_DRIVE \
     (NR_SUB_PER_PART * NR_PART_PER_DRIVE) // 每块硬盘(驱动器)最多有16 * 4 =

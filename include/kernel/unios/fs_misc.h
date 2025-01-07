@@ -68,7 +68,7 @@ typedef struct {       // 文件类型
     UINT  flag;        // 文件读写标志
 } File, *PFile;
 
-typedef struct { // 动态数组元素类型，用于存储文件或目录的基本信息
+typedef struct {        // 动态数组元素类型，用于存储文件或目录的基本信息
     CHAR fullpath[256]; // 绝对路径
     CHAR name[256];     // 文件名或目录名
     UINT tag;           // 1表示文件，0表示目录
@@ -82,13 +82,13 @@ typedef struct {           // 动态数组类型
     UINT        increment; // 当数组容量不足时，动态增长的步长
 } DArray;
 
-typedef struct {        // 文件或目录属性类型
-    BYTE type;          // 0x10表示目录，否则表示文件
-    CHAR name[256];     // 文件或目录名称
-    CHAR location[256]; // 文件或目录的位置，绝对路径
-    DWORD size; // 文件的大小或整个目录中(包括子目录中)的文件总大小
-    CHAR createTime[20];       // 创建时间型如：yyyy-MM-dd hh:mm:ss类型
-    CHAR lastModifiedTime[20]; // 最后修改时间
+typedef struct {          // 文件或目录属性类型
+    BYTE  type;           // 0x10表示目录，否则表示文件
+    CHAR  name[256];      // 文件或目录名称
+    CHAR  location[256];  // 文件或目录的位置，绝对路径
+    DWORD size;           // 文件的大小或整个目录中(包括子目录中)的文件总大小
+    CHAR  createTime[20]; // 创建时间型如：yyyy-MM-dd hh:mm:ss类型
+    CHAR  lastModifiedTime[20]; // 最后修改时间
 
     union {
         CHAR lastAccessDate[11]; // 最后访问时间，当type为文件值有效

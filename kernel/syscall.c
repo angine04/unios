@@ -155,6 +155,10 @@ static uint32_t sys_krnlobj_request() {
     return do_krnlobj_request(SYSCALL_ARGS2(int, void *));
 }
 
+static uint32_t sys_putframe() {
+    return do_putframe(SYSCALL_ARGS3(void *, size_t, int));
+}
+
 syscall_t syscall_table[NR_SYSCALLS] = {
     SYSCALL_ENTRY(get_ticks),
     SYSCALL_ENTRY(get_pid),
@@ -181,4 +185,4 @@ syscall_t syscall_table[NR_SYSCALLS] = {
     SYSCALL_ENTRY(killerabbit),
     SYSCALL_ENTRY(environ),
     SYSCALL_ENTRY(krnlobj_request),
-};
+    SYSCALL_ENTRY(putframe)};

@@ -120,17 +120,16 @@ void pg_refresh();
  */
 bool pg_create_and_init(uint32_t *p_cr3);
 
-
 /*!
- * \brief create page table and map the kernel space for video
+ * \brief set up video memory mapping
  *
- * \param [out] p_cr3 pointer to phyaddr of page table (cr3)
+ * \param cr3 pointer to phyaddr of page table (cr3)
  * \param video_bar video bar address
  * \param size video size
  *
  * \return successful or not
  */
-bool pg_init_video(uint32_t *p_cr3, uint32_t video_bar, uint32_t size);
+bool pg_init_video(uint32_t cr3, uint32_t video_bar, uint32_t size);
 
 //! NOTE: address of cr3 pde pte always located in kernel memory space, since we
 //! always mapping it for the program in the initilization stage, access to

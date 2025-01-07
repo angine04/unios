@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 
 enum {
     NR_get_ticks = 0,
@@ -27,6 +28,7 @@ enum {
     NR_killerabbit,
     NR_environ,
     NR_krnlobj_request,
+    NR_putframe,
     NR_exit,
 
     //! total syscalls
@@ -79,3 +81,6 @@ bool do_environ(int op, char *const **p_envp);
 
 //! from sync.c
 int do_krnlobj_request(int req, void *arg);
+
+//! from graphics.c
+int do_putframe(void *buffer, size_t size, int pid);
