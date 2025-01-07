@@ -162,8 +162,8 @@ int init_display(pci_dev_t *dev) {
         bga_buf_paddr,
         bga_screen_buffer_size);
     uint32_t new_cr3 = rcr3();
-    ktrace("new_cr3=%p\n", new_cr3);
+    kdebug("new_cr3=%p\n", new_cr3);
     pg_init_video(new_cr3, bga_buf_paddr, bga_screen_buffer_size);
-    ktrace("bga mapped in kernel cr3=%p\n", new_cr3);
+    kdebug("bga mapped in kernel cr3=%p\n", new_cr3);
     return 0;
 }

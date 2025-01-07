@@ -23,8 +23,8 @@ int do_putframe(void *buffer, size_t size, int pid) {
 
     // get framebuffer address
     uint32_t *framebuffer = (uint32_t *)bga_ioctl(BGA_GET_BUFFER, 0);
-    ktrace("framebuffer: %p\n", framebuffer);
-    ktrace("buffer: %p\n", buffer);
+    // kdebug("framebuffer: %p\n", framebuffer);
+    // kdebug("buffer: %p\n", buffer);
     // put frame to video memory
     copy_to_kernel(framebuffer, (uint32_t *)buffer, size, pid);
 
