@@ -52,4 +52,29 @@
  * @param x The number to calculate the square root of
  * @return The square root of x
  */
-float sqrt_float(float x);
+float sqrtf(float x);
+
+/*!
+ * @brief Calculate the natural logarithm of a float
+ *
+ * @param x The number to calculate the natural logarithm of
+ * @return The natural logarithm of x
+ */
+float logf(float x);
+
+/*!
+ * @brief Calculate the power of a float
+ *
+ * @param base The base number
+ * @param exp The exponent
+ * @return The power of the base and exponent
+ */
+float powf(float base, float exp);
+
+/*!
+ * @brief Calculate the exponential of a float
+ *
+ * @param x The number to calculate the exponential of
+ * @return The exponential of x
+ */
+float expf(float x);
