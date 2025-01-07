@@ -42,3 +42,14 @@
         size_t __n = (size_t)(n);                            \
         (typeof(a))(round_down((size_t)(a) + __n - 1, __n)); \
     })
+
+/*!
+ * @brief Calculate the square root of a float
+ *
+ * This function uses the infamous fast approximation algorithm,
+ * aka FastInvsqrt, to calculate the square root of a float.
+ *
+ * @param x The number to calculate the square root of
+ * @return The square root of x
+ */
+float sqrt_float(float x);
