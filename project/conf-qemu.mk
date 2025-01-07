@@ -8,7 +8,7 @@ QEMU_ARCH ?= i386
 QEMU      ?= qemu-system-$(QEMU_ARCH)
 
 QEMU_DISPLAY ?=
-QEMU_MEMORY  ?= 128
+QEMU_MEMORY  ?= 256
 
 QEMU_FLAGS ?=
 QEMU_FLAGS += -boot order=c
