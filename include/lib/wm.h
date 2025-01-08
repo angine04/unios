@@ -10,7 +10,7 @@ typedef struct wm_content_t{
     int height;
     int z_index;
     int layer_index;
-    bool callbackEnabel;
+    bool callbackEnable;
     void (*bandFunction)(void);
     struct wm_window_t* belongWindow;
 } wm_content_t;//窗口带有的组件，x,y以窗口左上角位置为原点
@@ -63,7 +63,7 @@ void init_desktop(wm_ctx_t *ctx);
 
 /* ***************window operate***************** */
 /*!
- * @brief Add a window to the window manager
+ * @brief Add a window to the window manager.Will set the window's z_index, id, sort the window's contents, and sort the layer
  * @param ctx The window manager context
  * @param window The window to add
  */
