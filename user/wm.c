@@ -65,7 +65,7 @@ void test_layers(layer_ctx_t *layer_ctx, int pid) {
 
 void test_window(wm_ctx_t *ctx, int pid){
     wm_window_t* w = (wm_window_t*)malloc(sizeof(wm_window_t));
-    w->x = 200;
+    w->x = 100;
     w->y = 100;
     w->width = 100;
     w->height = 100;
@@ -84,13 +84,13 @@ void test_window(wm_ctx_t *ctx, int pid){
     w->contents[0].bandFunction = NULL;
     w->contents[0].belongWindow = w;
 
-    w->contents[1].x = 20;
-    w->contents[1].y = 20;
-    w->contents[1].width = 10;
-    w->contents[1].height = 10;
-    w->contents[1].z_index = 20;
+    w->contents[1].x = 50;
+    w->contents[1].y = 50;
+    w->contents[1].width = 32;
+    w->contents[1].height = 32;
+    w->contents[1].z_index = 40;
     w->contents[1].layer_index = create_layer(ctx->layer_ctx, w->contents[1].x, w->contents[1].y, w->contents[1].width, w->contents[1].height, 20);
-    rect(ctx->layer_ctx, w->contents[1].layer_index, 5, 5, 90, 90, COLOR_TRANSPARENT);
+    use_icon_32(ctx->layer_ctx, w->contents[1].layer_index, 0);
     w->contents[1].callbackEnable = false;
     w->contents[1].bandFunction = NULL;
     w->contents[1].belongWindow = w;
@@ -116,8 +116,8 @@ void test_window(wm_ctx_t *ctx, int pid){
     w2->contents[0].bandFunction = NULL;
     w2->contents[0].belongWindow = w2;
 
-    w2->contents[1].x = 30;
-    w2->contents[1].y = 30;
+    w2->contents[1].x = 50;
+    w2->contents[1].y = 50;
     w2->contents[1].width = 32;
     w2->contents[1].height = 32;
     w2->contents[1].z_index = 40;
@@ -175,7 +175,7 @@ void test_window(wm_ctx_t *ctx, int pid){
         sleep(200);
 
         // Click on first window
-        wm_updateTopWindow(ctx, 220, 120);
+        wm_updateTopWindow(ctx, 120, 120);
         render(ctx->layer_ctx, pid);
         sleep(200);
 
@@ -307,7 +307,7 @@ int wm_remove_top_window(wm_ctx_t *ctx){
     }
     return 0;
 }
-void wm_updateTopWindow(wm_ctx_t *ctx, int cursor_x, int cursor_y){//需确保触发的不是用户顶层窗口
+void wm_updateTopWindow(wm_ctx_t *ctx, int cursor_x, int cursor_y){
     //检索鼠标点击处触发了哪个非用户TOP WINDOW的窗口
     wm_windowNode* p = ctx->topWindow->next_wmN->next_wmN;
     int t = 0;
