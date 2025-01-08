@@ -374,3 +374,7 @@ int use_icon_32(layer_ctx_t *ctx, int layer_index, int icon_index) {
     }
     return 0;
 }
+
+void sort_layer(layer_ctx_t* ctx){
+    sort_layers_by_z(ctx);
+}

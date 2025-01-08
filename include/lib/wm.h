@@ -1,6 +1,6 @@
-#define MAX_LAYERS 10
-#define MAX_WINDOWS 5
-#define MAX_BUTTONS 10
+#define MAX_CONTENTS 20
+#define CURSOR_Z_INDEX 65535
+#define DESKTOP_Z_INDEX 1
 
 typedef struct {
     int x;
@@ -9,29 +9,38 @@ typedef struct {
     int height;
     int z_index;
     int layer_index;
-    int affliated_window;
-} wm_button_t;
+    bool callbackEnabel;
+    void (*bandFunction)(void);
+    wm_window_t* belongWindow;
+} wm_content_t;//窗口带有的组件，x,y以窗口左上角位置为原点
 
 typedef struct {
+    int id;
     int x;
     int y;
     int width;
     int height;
-    int layer_indices[MAX_LAYERS];
+    wm_content_t contents[MAX_CONTENTS];
     int layer_count;
-    int z_index;
+    int w_z_index;
     int button_count;
-    wm_button_t buttons[MAX_BUTTONS];
-} wm_window_t;
+} wm_window_t;//窗口，x,y表示窗口左上角位置
 
 typedef struct {
-    wm_window_t windows[MAX_WINDOWS];
+    wm_windowNode* pre_wmN;
+    wm_windowNode* next_wmN;
+    wm_window_t* window;
+}wm_windowNode;
+
+typedef struct {
+    wm_windowNode topWindow;
+    wm_windowNode bottomWindow;
     int window_count;
     layer_ctx_t* layer_ctx;
 } wm_ctx_t;
 
 
-
+/* ******************init*********************** */
 /*!
  * @brief Initialize the window manager
  * @param ctx The window manager context
@@ -39,27 +48,49 @@ typedef struct {
 void wm_init(wm_ctx_t *ctx);
 
 /*!
+ * @brief Initialize the cursor. the topWindow will be init.
+ * @param ctx The window manager context
+ */
+void init_cursor(wm_ctx_t *ctx)
+
+/*!
+ * @brief Initialize the desktop. the bottomWindow will be init.
+ * @param ctx The window manager context
+ */
+void init_desktop(wm_ctx_t *ctx);
+
+/* ***************window operate***************** */
+/*!
  * @brief Add a window to the window manager
  * @param ctx The window manager context
  * @param window The window to add
  */
-void wm_add_window(wm_ctx_t *ctx, wm_window_t *window);
+int wm_add_window(wm_ctx_t *ctx, wm_window_t* window);
 
 /*!
- * @brief Remove a window from the window manager
+ * @brief Remove a window from the window manager by id
  * @param ctx The window manager context
  * @param window_index The index of the window to remove
  */
-void wm_remove_window(wm_ctx_t *ctx, int window_index);
+int wm_remove_window(wm_ctx_t *ctx, int window_id);
 
 /*!
- * @brief Update display
+ * @brief Remove top window from the window manager
  * @param ctx The window manager context
+ * @param window_index The index of the window to remove
  */
-void wm_update(wm_ctx_t *ctx);
+int wm_remove_top_window(wm_ctx_t *ctx);
 
 /*!
- * @brief Initialize the desktop
+ * @brief 根据鼠标点击位置，更新用户最上层窗口change the top window
  * @param ctx The window manager context
+ * @param cursor_x cursor x position
+ * @param cursor_y cursor y position
  */
-void init_desktop(wm_ctx_t *ctx);
+void wm_updateTopWindow(wm_ctx_t *ctx, int cursor_x, int cursor_y);
+
+
+/*!
+ * @brief Resize the Top USER window and components that belong it
+ */
+void wm_resizeWindows(int newWide, int newHeight);

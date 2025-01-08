@@ -162,3 +162,5 @@ int top(layer_ctx_t *ctx, int layer_index);
 int get_top_z_index(layer_ctx_t *ctx);
 
 int use_icon_32(layer_ctx_t *ctx, int layer_index, int icon_index);
+
+void sort_layer(layer_ctx_t* ctx);
