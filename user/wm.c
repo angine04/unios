@@ -9,6 +9,7 @@
 #include <wm.h>
 #include <malloc.h>
 
+
 static int window_id = 2;
 
 static int isHitByCursor(int x, int y, int width, int height, int cursor_x, int cursor_y){
@@ -64,21 +65,21 @@ void test_layers(layer_ctx_t *layer_ctx, int pid) {
 
 void test_window(wm_ctx_t *ctx, int pid){
     wm_window_t* w = (wm_window_t*)malloc(sizeof(wm_window_t));
-    w->x = 100;
+    w->x = 200;
     w->y = 100;
-    w->width = 200;
-    w->height = 200;
-    w->contents[0].x = 10;
-    w->contents[0].y = 10;
+    w->width = 100;
+    w->height = 100;
+    w->contents[0].x = 100;
+    w->contents[0].y = 100;
     w->contents[0].width = 100;
     w->contents[0].height = 100;
     w->contents[0].z_index = 10;
     w->contents[0].layer_index = create_layer(ctx->layer_ctx, w->contents[0].x, w->contents[0].y, w->contents[0].width, w->contents[0].height, 10);
     fill(ctx->layer_ctx, w->contents[0].layer_index, COLOR_SILVER);
-    rect(ctx->layer_ctx, w->contents[0].layer_index, 5, 5, 190, 190, COLOR_LIGHTGREY);
-    circle(ctx->layer_ctx, w->contents[0].layer_index, 100, 100, 30, COLOR_BLUE);
-    circle(ctx->layer_ctx, w->contents[0].layer_index, 100, 100, 10, COLOR_RED);
-    triangle(ctx->layer_ctx, w->contents[0].layer_index, 50, 50, 70, 130, 90, 110, COLOR_GREEN);
+    rect(ctx->layer_ctx, w->contents[0].layer_index, 5, 5, 19, 19, COLOR_LIGHTGREY);
+    circle(ctx->layer_ctx, w->contents[0].layer_index, 50, 50, 20, COLOR_BLUE);
+    circle(ctx->layer_ctx, w->contents[0].layer_index, 60, 40, 20, COLOR_RED);
+    triangle(ctx->layer_ctx, w->contents[0].layer_index, 50, 50, 70, 100, 90, 90, COLOR_GREEN);
     w->contents[0].callbackEnable = false;
     w->contents[0].bandFunction = NULL;
     w->contents[0].belongWindow = w;
@@ -130,7 +131,7 @@ void test_window(wm_ctx_t *ctx, int pid){
 
     // Create third window that overlaps with first window
     wm_window_t* w3 = (wm_window_t*)malloc(sizeof(wm_window_t));
-    w3->x = 150;
+    w3->x = 250;
     w3->y = 150;
     w3->width = 200;
     w3->height = 200;
@@ -174,12 +175,12 @@ void test_window(wm_ctx_t *ctx, int pid){
         sleep(200);
 
         // Click on first window
-        wm_updateTopWindow(ctx, 120, 120);
+        wm_updateTopWindow(ctx, 220, 120);
         render(ctx->layer_ctx, pid);
         sleep(200);
 
         // Click on third window
-        wm_updateTopWindow(ctx, 200, 200);
+        wm_updateTopWindow(ctx, 300, 200);
         render(ctx->layer_ctx, pid);
         sleep(200);
 
@@ -275,9 +276,14 @@ int wm_add_window(wm_ctx_t *ctx, wm_window_t* window){
     }
     //计算并重新设定组件图层layer z index, x, y
     for(int i = 0; i < MAX_CONTENTS; i++){
-        ctx->layer_ctx->layers[window->contents[i].layer_index].z_index = window->w_z_index * MAX_CONTENTS + 1 + i;
-        ctx->layer_ctx->layers[window->contents[i].layer_index].pos_x = window->contents[i].x + window->x;
-        ctx->layer_ctx->layers[window->contents[i].layer_index].pos_y = window->contents[i].y + window->y;
+        if(window->contents[i].layer_index <= 0){
+            continue;
+        }else{
+            ctx->layer_ctx->layers[window->contents[i].layer_index].z_index = window->w_z_index * MAX_CONTENTS + 1 + i;
+            ctx->layer_ctx->layers[window->contents[i].layer_index].pos_x = window->contents[i].x + window->x;
+            ctx->layer_ctx->layers[window->contents[i].layer_index].pos_y = window->contents[i].y + window->y;
+        }
+
     }
     sort_layer(ctx->layer_ctx);
     return 0;
