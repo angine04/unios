@@ -16,6 +16,7 @@ typedef struct {
     int      height;
     pixel_t *buf;
     int      z_index;
+    float    opacity;
 } layer_t;
 
 /*!
@@ -25,6 +26,7 @@ typedef struct {
     layer_t layers[LAYER_MAX_NUM];
     int     layer_num;
     int     top_z_index;
+    int     sorted_indices[LAYER_MAX_NUM];
 } layer_ctx_t;
 
 /*!
@@ -56,11 +58,17 @@ int compose(layer_ctx_t *ctx);
  * @param pos_y The y position of the layer
  * @param width The width of the layer
  * @param height The height of the layer
+ * @param opacity The opacity of the layer
  * @param z_index The z index of the layer
  * @return index of the layer, -1 on failure
  */
 int create_layer(
-    layer_ctx_t *ctx, int pos_x, int pos_y, int width, int height, int z_index);
+    layer_ctx_t *ctx,
+    int          pos_x,
+    int          pos_y,
+    int          width,
+    int          height,
+    int          z_index);
 
 /*!
  * @brief Release a layer
@@ -121,7 +129,7 @@ int circle(layer_ctx_t *ctx, int layer_index, int center_x, int center_y, int ra
  * @param alpha The alpha value
  * @return The blended color
  */
-pixel_t blend_colors(pixel_t color1, pixel_t color2, float alpha);
+pixel_t blend(pixel_t color1, pixel_t color2, float alpha);
 
 /*!
  * @brief Draw a triangle on a layer
@@ -137,3 +145,20 @@ pixel_t blend_colors(pixel_t color1, pixel_t color2, float alpha);
  * @return 0 on success, -1 on failure
  */
 int triangle(layer_ctx_t *ctx, int layer_index, int x1, int y1, int x2, int y2, int x3, int y3, pixel_t color);
+
+/*!
+ * @brief put a layer on top
+ * @param ctx The compositor context
+ * @param layer_index The index of the layer
+ * @return The z index of the layer
+ */
+int top(layer_ctx_t *ctx, int layer_index);
+
+/*!
+ * @brief get the top z index
+ * @param ctx The compositor context
+ * @return The top z index
+ */
+int get_top_z_index(layer_ctx_t *ctx);
+
+int use_icon_32(layer_ctx_t *ctx, int layer_index, int icon_index);

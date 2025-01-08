@@ -25,6 +25,7 @@ int do_putframe(void *buffer, size_t size, int pid) {
     uint32_t *framebuffer = (uint32_t *)bga_ioctl(BGA_GET_BUFFER, 0);
     // kdebug("framebuffer: %p\n", framebuffer);
     // kdebug("buffer: %p\n", buffer);
+    kdebug("putframe\n");
     // put frame to video memory
     copy_to_kernel(framebuffer, (uint32_t *)buffer, size, pid);
 

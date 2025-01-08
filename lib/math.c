@@ -29,12 +29,12 @@ float logf(float x) {
     sum  += term / 7.0f;
     term  = term * y2;
     sum  += term / 9.0f;
-    term  = term * y2;
-    sum  += term / 11.0f;
-    term  = term * y2;
-    sum  += term / 13.0f;
-    term  = term * y2;
-    sum  += term / 15.0f;
+    // term  = term * y2;
+    // sum  += term / 11.0f;
+    // term  = term * y2;
+    // sum  += term / 13.0f;
+    // term  = term * y2;
+    // sum  += term / 15.0f;
 
     return 2.0f * sum;
 }
@@ -58,21 +58,21 @@ float expf(float x) {
     term  = term * x / n;
     sum  += term;
     n    += 1.0f;
-    term  = term * x / n;
-    sum  += term;
-    n    += 1.0f;
-    term  = term * x / n;
-    sum  += term;
-    n    += 1.0f;
-    term  = term * x / n;
-    sum  += term;
-    n    += 1.0f;
-    term  = term * x / n;
-    sum  += term;
-    n    += 1.0f;
-    term  = term * x / n;
-    sum  += term;
-    n    += 1.0f;
+    // term  = term * x / n;
+    // sum  += term;
+    // n    += 1.0f;
+    // term  = term * x / n;
+    // sum  += term;
+    // n    += 1.0f;
+    // term  = term * x / n;
+    // sum  += term;
+    // n    += 1.0f;
+    // term  = term * x / n;
+    // sum  += term;
+    // n    += 1.0f;
+    // term  = term * x / n;
+    // sum  += term;
+    // n    += 1.0f;
 
     return sum;
 }

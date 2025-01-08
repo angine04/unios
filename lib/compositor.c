@@ -8,8 +8,33 @@
 #include <compositor.h>
 #include <malloc.h>
 #include <math.h>
-
+#include <icon_assets.h>
 static pixel_t screen_vram[DISPLAY_WIDTH * DISPLAY_HEIGHT] = {0};
+
+// Sort layers by z-index and return sorted indices
+static int sort_layers_by_z(layer_ctx_t *ctx) {
+    int sorted_count = 0;
+
+    // Collect indices of layers in use
+    for (int i = 0; i < LAYER_MAX_NUM; i++) {
+        if (ctx->layers[i].in_use) { ctx->sorted_indices[sorted_count++] = i; }
+    }
+
+    // Sort indices by z-index using insertion sort
+    for (int i = 1; i < sorted_count; i++) {
+        int key   = ctx->sorted_indices[i];
+        int key_z = ctx->layers[key].z_index;
+        int j     = i - 1;
+
+        while (j >= 0 && ctx->layers[ctx->sorted_indices[j]].z_index > key_z) {
+            ctx->sorted_indices[j + 1] = ctx->sorted_indices[j];
+            j--;
+        }
+        ctx->sorted_indices[j + 1] = key;
+    }
+
+    return sorted_count;
+}
 
 int compositor_init(layer_ctx_t *ctx) {
     ctx->layer_num = 0;
@@ -26,7 +51,7 @@ int compositor_init(layer_ctx_t *ctx) {
 
     // create background layer
     int background_layer_index =
-        create_layer(ctx, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, 1);
+        create_layer(ctx, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, 0);
     assert(background_layer_index != -1);
 
     // fill background layer
@@ -46,35 +71,16 @@ int render(layer_ctx_t *ctx, int pid) {
 
 int compose(layer_ctx_t *ctx) {
     // Create array of layer indices sorted by z-index
-    int sorted_indices[LAYER_MAX_NUM];
-    int sorted_count = 0;
+    int sorted_count = sort_layers_by_z(ctx);
 
-    // Collect indices of layers in use
-    for (int i = 0; i < LAYER_MAX_NUM; i++) {
-        if (ctx->layers[i].in_use) { sorted_indices[sorted_count++] = i; }
-    }
-
-    // Sort indices by z-index using insertion sort
-    for (int i = 1; i < sorted_count; i++) {
-        int key   = sorted_indices[i];
-        int key_z = ctx->layers[key].z_index;
-        int j     = i - 1;
-
-        while (j >= 0 && ctx->layers[sorted_indices[j]].z_index > key_z) {
-            sorted_indices[j + 1] = sorted_indices[j];
-            j--;
-        }
-        sorted_indices[j + 1] = key;
-    }
-
-    ctx->top_z_index = ctx->layers[sorted_indices[sorted_count - 1]].z_index;
+    ctx->top_z_index = ctx->layers[ctx->sorted_indices[sorted_count - 1]].z_index;
 
     // Clear screen buffer
     // memset(screen_vram, 0, DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(pixel_t));
 
     // Compose layers in z-index order
     for (int i = 0; i < sorted_count; i++) {
-        layer_t *layer = &ctx->layers[sorted_indices[i]];
+        layer_t *layer = &ctx->layers[ctx->sorted_indices[i]];
         if (!layer->visible) continue;
 
         for (int y = 0; y < layer->height; y++) {
@@ -84,8 +90,28 @@ int compose(layer_ctx_t *ctx) {
 
                 if (screen_x >= 0 && screen_x < DISPLAY_WIDTH && screen_y >= 0
                     && screen_y < DISPLAY_HEIGHT) {
-                    screen_vram[screen_y * DISPLAY_WIDTH + screen_x] =
-                        layer->buf[y * layer->width + x];
+                    pixel_t src_pixel = layer->buf[y * layer->width + x];
+                    pixel_t dst_pixel =
+                        screen_vram[screen_y * DISPLAY_WIDTH + screen_x];
+
+                    // Get alpha value from highest 8 bits
+                    uint8_t alpha = (src_pixel >> 24) & 0xFF;
+
+                    if (alpha == 0x00) {
+                        // Fully opaque
+                        screen_vram[screen_y * DISPLAY_WIDTH + screen_x] =
+                            src_pixel;
+                    } else if (alpha != 0xFF) {
+                        // Partially transparent - blend colors
+                        float   transparency = alpha / 255.0f;
+                        pixel_t blended = blend(src_pixel, dst_pixel, transparency);
+                        uint8_t r = (blended >> 16) & 0xFF;
+                        uint8_t g = (blended >> 8) & 0xFF;
+                        uint8_t b = blended & 0xFF;
+
+                        screen_vram[screen_y * DISPLAY_WIDTH + screen_x] =
+                            (r << 16) | (g << 8) | b;
+                    }
                 }
             }
         }
@@ -145,6 +171,7 @@ int create_layer(
     ctx->layers[layer_index].z_index = z_index;
     ctx->layer_num++;
 
+    sort_layers_by_z(ctx);
     return layer_index;
 }
 
@@ -159,6 +186,7 @@ int release_layer(layer_ctx_t *ctx, int index) {
     ctx->layers[index].buf     = NULL;
     ctx->layers[index].z_index = 0;
     ctx->layer_num--;
+    sort_layers_by_z(ctx);
     return 0;
 }
 
@@ -205,7 +233,7 @@ float distance(int x1, int y1, int x2, int y2) {
 }
 
 // Blend two colors in gamma-correct linear space with alpha
-pixel_t blend_colors(pixel_t color1, pixel_t color2, float alpha) {
+pixel_t blend(pixel_t color1, pixel_t color2, float alpha) {
     // Convert to linear space
     float r1 = powf(((color1 >> 16) & 0xFF) / 255.0f, 2.2f);
     float g1 = powf(((color1 >> 8) & 0xFF) / 255.0f, 2.2f);
@@ -221,14 +249,20 @@ pixel_t blend_colors(pixel_t color1, pixel_t color2, float alpha) {
     float b = b1 * alpha + b2 * (1.0f - alpha);
 
     // Convert back to sRGB space
-    uint8_t r_out = (uint8_t)(powf(r, 1.0f/2.2f) * 255.0f);
-    uint8_t g_out = (uint8_t)(powf(g, 1.0f/2.2f) * 255.0f);
-    uint8_t b_out = (uint8_t)(powf(b, 1.0f/2.2f) * 255.0f);
+    uint8_t r_out = (uint8_t)(powf(r, 1.0f / 2.2f) * 255.0f);
+    uint8_t g_out = (uint8_t)(powf(g, 1.0f / 2.2f) * 255.0f);
+    uint8_t b_out = (uint8_t)(powf(b, 1.0f / 2.2f) * 255.0f);
 
     return (r_out << 16) | (g_out << 8) | b_out;
 }
 
-int circle(layer_ctx_t *ctx, int layer_index, int center_x, int center_y, int radius, pixel_t color) {
+int circle(
+    layer_ctx_t *ctx,
+    int          layer_index,
+    int          center_x,
+    int          center_y,
+    int          radius,
+    pixel_t      color) {
     layer_t *layer = &ctx->layers[layer_index];
     for (int y = 0; y < layer->height; y++) {
         for (int x = 0; x < layer->width; x++) {
@@ -236,22 +270,26 @@ int circle(layer_ctx_t *ctx, int layer_index, int center_x, int center_y, int ra
             if (dist <= radius) {
                 // Calculate alpha based on distance from edge
                 float alpha = 1.0f;
-                if (dist > radius - 1.0f) {
-                    alpha = radius - dist;
-                }
+                if (dist > radius - 1.0f) { alpha = radius - dist; }
 
-                layer->buf[y * layer->width + x] = blend_colors(
-                    color,
-                    layer->buf[y * layer->width + x],
-                    alpha
-                );
+                layer->buf[y * layer->width + x] = blend(
+                    color, layer->buf[y * layer->width + x], alpha);
             }
         }
     }
     return 0;
 }
 
-int triangle(layer_ctx_t *ctx, int layer_index, int x1, int y1, int x2, int y2, int x3, int y3, pixel_t color) {
+int triangle(
+    layer_ctx_t *ctx,
+    int          layer_index,
+    int          x1,
+    int          y1,
+    int          x2,
+    int          y2,
+    int          x3,
+    int          y3,
+    pixel_t      color) {
     layer_t *layer = &ctx->layers[layer_index];
 
     // Find bounding box
@@ -297,22 +335,42 @@ int triangle(layer_ctx_t *ctx, int layer_index, int x1, int y1, int x2, int y2, 
                 float d2 = (sample_x - x2) * e2_y - (sample_y - y2) * e2_x;
                 float d3 = (sample_x - x3) * e3_y - (sample_y - y3) * e3_x;
 
-                bool inside = (d1 >= 0 && d2 >= 0 && d3 >= 0) || (d1 <= 0 && d2 <= 0 && d3 <= 0);
-                if (inside) {
-                    samples_inside++;
-                }
+                bool inside = (d1 >= 0 && d2 >= 0 && d3 >= 0)
+                           || (d1 <= 0 && d2 <= 0 && d3 <= 0);
+                if (inside) { samples_inside++; }
             }
 
             if (samples_inside > 0) {
-                float alpha = samples_inside / 4.0f;
-                layer->buf[y * layer->width + x] = blend_colors(
-                    color,
-                    layer->buf[y * layer->width + x],
-                    alpha
-                );
+                float alpha                      = samples_inside / 4.0f;
+                layer->buf[y * layer->width + x] = blend(
+                    color, layer->buf[y * layer->width + x], alpha);
             }
         }
     }
 
+    return 0;
+}
+
+int top(layer_ctx_t *ctx, int layer_index) {
+    ctx->layers[layer_index].z_index = ctx->top_z_index + 1;
+    ctx->top_z_index++;
+    sort_layers_by_z(ctx);
+    return 0;
+}
+
+int get_top_z_index(layer_ctx_t *ctx) {
+    return ctx->top_z_index;
+}
+
+int use_icon_32(layer_ctx_t *ctx, int layer_index, int icon_index) {
+    layer_t *layer = &ctx->layers[layer_index];
+    if (layer->width != 32 || layer->height != 32) {
+        return -1;
+    }
+    for (int y = 0; y < 32; y++) {
+        for (int x = 0; x < 32; x++) {
+            layer->buf[y * 32 + x] = icon_program[y][x];
+        }
+    }
     return 0;
 }

@@ -19,6 +19,7 @@
 #define COLOR_GREY		        0x848484
 #define COLOR_TEAL			    0x008080
 #define COLOR_SILVER		    0x808080
+#define COLOR_TRANSPARENT	    0xff000000
 
 #define PAGE_SIZE 4096
 
