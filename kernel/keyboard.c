@@ -3,6 +3,7 @@
 #include <unios/keymap.h>
 #include <arch/x86.h>
 #include <sys/defs.h>
+#include <unios/tracing.h>
 
 static KB_INPUT    kb_in;
 static MOUSE_INPUT mouse_in;
@@ -88,6 +89,7 @@ void mouse_handler(int irq) {
     }
 
     mouse_in.buf[mouse_in.count++] = scan_code;
+    kdebug("mouse_in scan_code: %x\n", scan_code);
 
     disable_int_begin();
 

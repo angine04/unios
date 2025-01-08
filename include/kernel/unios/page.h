@@ -15,6 +15,7 @@
 #define PG_RWX     PG_MASK_RW      //<! read & write & executable
 #define PG_S       0               //<! supervisor
 #define PG_U       PG_MASK_US      //<! user
+#define PAGE_SIZE 4096
 
 /*!
  * \brief free pde table according to the given cr3
@@ -201,3 +202,27 @@ PGBASE_CALL bool pg_pde_exist(uint32_t cr3, uint32_t laddr) {
 PGBASE_CALL bool pg_pte_exist(uint32_t pde, uint32_t laddr) {
     return pg_pte_attr(pde, laddr, PG_MASK_P) == PG_P;
 }
+
+/*!
+ * \brief copy buffer to kernel space
+ *
+ * \param dst destination
+ * \param src source
+ * \param size size of buffer
+ * \param pid pid of process
+ *
+ * \return 0 if success, -1 if fail
+ */
+int copy_to_kernel(uint32_t *dst, uint32_t *src, int size, int pid);
+
+/*!
+ * \brief copy buffer to user space
+ *
+ * \param dst destination
+ * \param src source
+ * \param size size of buffer
+ * \param pid pid of process
+ *
+ * \return 0 if success, -1 if fail
+ */
+int copy_to_user(uint32_t *dst, uint32_t *src, int size, int pid);

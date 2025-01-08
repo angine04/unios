@@ -251,8 +251,8 @@ bool pg_create_and_init(uint32_t *p_cr3) {
 
 bool pg_init_video(uint32_t cr3, uint32_t video_bar, uint32_t size) {
     kinfo("pg_init_video: Mapping video memory\n");
-    uint32_t base            = video_bar;
-    uint32_t limit           = video_bar + size;
+    uint32_t base  = video_bar;
+    uint32_t limit = video_bar + size;
     kinfo("pg_init_video: base=%p, limit=%p\n", base, limit);
     uint32_t laddr   = base;
     uint32_t phyaddr = base;
@@ -265,4 +265,126 @@ bool pg_init_video(uint32_t cr3, uint32_t video_bar, uint32_t size) {
     pg_refresh();
     kinfo("pg_init_video: done\n");
     return true;
+}
+
+int copy_to_kernel(uint32_t *dst, uint32_t *src, int size, int pid) {
+    uint32_t kernel_lin_addr, current_user_lin_addr, current_user_phy_addr,
+        offset;
+
+    disable_int();
+    // load cr3
+    lcr3(0x100000);
+
+    // calculate the offset of virtual address and physical address
+    kernel_lin_addr       = (uint32_t)dst;
+    current_user_lin_addr = (uint32_t)src;
+
+    current_user_phy_addr =
+        pg_laddr_phyaddr(proc_table[pid]->pcb.cr3, current_user_lin_addr);
+    offset                 = current_user_lin_addr & 0xfff;
+    current_user_phy_addr += offset;
+
+    if (size < PAGE_SIZE) {
+        memcpy(
+            (void *)kernel_lin_addr,
+            (void *)K_PHY2LIN(current_user_phy_addr),
+            size);
+        lcr3(proc_table[pid]->pcb.cr3);
+        enable_int();
+        return 0;
+    }
+
+    memcpy(
+        (void *)kernel_lin_addr,
+        (void *)K_PHY2LIN(current_user_phy_addr),
+        (PAGE_SIZE - offset));
+
+    size                  -= (PAGE_SIZE - offset);
+    kernel_lin_addr       -= offset;
+    current_user_lin_addr -= offset;
+
+    while (size >= PAGE_SIZE) {
+        kernel_lin_addr       += PAGE_SIZE;
+        current_user_lin_addr += PAGE_SIZE;
+        current_user_phy_addr =
+            pg_laddr_phyaddr(proc_table[pid]->pcb.cr3, current_user_lin_addr);
+        size -= (PAGE_SIZE);
+        memcpy(
+            (void *)kernel_lin_addr,
+            (void *)K_PHY2LIN(current_user_phy_addr),
+            (PAGE_SIZE));
+    }
+    if (size > 0) {
+        kernel_lin_addr       += PAGE_SIZE;
+        current_user_lin_addr += PAGE_SIZE;
+        current_user_phy_addr =
+            pg_laddr_phyaddr(proc_table[pid]->pcb.cr3, current_user_lin_addr);
+        memcpy(
+            (void *)kernel_lin_addr,
+            (void *)K_PHY2LIN(current_user_phy_addr),
+            size);
+    }
+
+    lcr3(proc_table[pid]->pcb.cr3);
+
+    enable_int();
+    return 0;
+}
+
+int copy_to_user(uint32_t *dst, uint32_t *src, int size, int pid) {
+    uint32_t kernel_lin_addr, current_user_lin_addr, current_user_phy_addr,
+        offset;
+
+    disable_int();
+    lcr3(0x100000);
+    kernel_lin_addr       = (uint32_t)src;
+    current_user_lin_addr = (uint32_t)dst;
+
+    current_user_phy_addr =
+        pg_laddr_phyaddr(proc_table[pid]->pcb.cr3, current_user_lin_addr);
+    offset                 = current_user_lin_addr & 0xfff;
+    current_user_phy_addr += offset;
+    if (size < PAGE_SIZE) {
+        memcpy(
+            (void *)K_PHY2LIN(current_user_phy_addr),
+            (void *)kernel_lin_addr,
+            size);
+        lcr3(proc_table[pid]->pcb.cr3);
+        enable_int();
+        return 0;
+    }
+    memcpy(
+        (void *)K_PHY2LIN(current_user_phy_addr),
+        (void *)kernel_lin_addr,
+        (PAGE_SIZE - offset));
+    size                  -= (PAGE_SIZE - offset);
+    kernel_lin_addr       -= offset;
+    current_user_lin_addr -= offset;
+
+    while (size >= PAGE_SIZE) {
+        kernel_lin_addr       += PAGE_SIZE;
+        current_user_lin_addr += PAGE_SIZE;
+        current_user_phy_addr =
+            pg_laddr_phyaddr(proc_table[pid]->pcb.cr3, current_user_lin_addr);
+        size -= (PAGE_SIZE);
+        memcpy(
+            (void *)K_PHY2LIN(current_user_phy_addr),
+            (void *)kernel_lin_addr,
+            (PAGE_SIZE));
+    }
+    if (size > 0) {
+        kernel_lin_addr       += PAGE_SIZE;
+        current_user_lin_addr += PAGE_SIZE;
+        current_user_phy_addr =
+            pg_laddr_phyaddr(proc_table[pid]->pcb.cr3, current_user_lin_addr);
+        memcpy(
+            (void *)K_PHY2LIN(current_user_phy_addr),
+            (void *)kernel_lin_addr,
+            size);
+    }
+
+    lcr3(proc_table[pid]->pcb.cr3);
+
+    enable_int();
+    return 0;
 }
