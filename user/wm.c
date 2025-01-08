@@ -9,7 +9,12 @@
 #include <wm.h>
 #include <malloc.h>
 
-
+static int isHitByCursor(int x, int y, int width, int height, int cursor_x, int cursor_y){
+    if((cursor_x > x) && (cursor_x < x+width) && (cursor_y > y) && (cursor_y < y+height)){
+        return 1;
+    }
+    return 0;
+}
 
 
 void test_layers(layer_ctx_t *layer_ctx, int pid) {
@@ -55,6 +60,11 @@ void test_layers(layer_ctx_t *layer_ctx, int pid) {
     }
 }
 
+void test_window(wm_ctx_t *ctx, int pid){
+    wm_window_t* w = (wm_window_t*)malloc(sizeof(wm_window_t));
+
+    //wm_add_window(ctx, w);
+}
 
 int main() {
     int pid = get_pid();
@@ -83,43 +93,43 @@ void wm_init(wm_ctx_t *ctx) {
     ctx->window_count = 2;
     ctx->layer_ctx = malloc(sizeof(layer_ctx_t));
 
-    ctx->topWindow.pre_wmN = NULL;
-    ctx->topWindow.next_wmN = &(ctx->bottomWindow);
-    ctx->bottomWindow.pre_wmN = &(ctx->topWindow);
-    ctx->bottomWindow.next_wmN = NULL;
-
-    ctx->topWindow.id = 0;
-    ctx->bottomWindow.id = 1;
-
+    ctx->topWindow = (wm_windowNode*)malloc(sizeof(wm_windowNode));
+    ctx->bottomWindow = (wm_windowNode*)malloc(sizeof(wm_windowNode));
+    ctx->topWindow->pre_wmN = NULL;
+    ctx->topWindow->next_wmN = ctx->bottomWindow;
+    ctx->bottomWindow->pre_wmN = ctx->topWindow;
+    ctx->bottomWindow->next_wmN = NULL;
     compositor_init(ctx->layer_ctx);
 }
 
 void init_desktop(wm_ctx_t *ctx) {
     wm_window_t* w = (wm_window_t*)malloc(sizeof(wm_window_t));
     w->w_z_index = DESKTOP_Z_INDEX;
-    ctx->bottomWindow.window = w;//bottom forever
+    w->id = 0;
+    ctx->bottomWindow->window = w;//bottom forever
 }
 void init_cursor(wm_ctx_t *ctx) {
     wm_window_t* w = (wm_window_t*)malloc(sizeof(wm_window_t));
     w->w_z_index = CURSOR_Z_INDEX;
-    ctx->bottomWindow.window = w;//bottom forever
+    w->id = 1;
+    ctx->bottomWindow->window = w;//bottom forever
 }
 
 
 int wm_add_window(wm_ctx_t *ctx, wm_window_t* window){//w z index分配：顶层始终为CURSOR_Z_INDEX-1
     //新增窗口为之前顶层用户窗口 w z index + 1
-    if(window_count == 2){window->w_z_index = DESKTOP_Z_INDEX + 1}
+    if(ctx->window_count == 2){window->w_z_index = DESKTOP_Z_INDEX + 1;}
     else{
-        window->w_z_index = ctx->topWindow.next_wmN->window->w_z_index;
+        window->w_z_index = ctx->topWindow->next_wmN->window->w_z_index;
     }
     //插入新窗口
     wm_windowNode* wmN = (wm_windowNode*)malloc(sizeof(wm_windowNode));
     wmN->window = window;
-    wmN->pre_wmN = &(ctx->topWindow);
-    wmN->next_wmN = ctx->topWindow.next_wmN;
+    wmN->pre_wmN = ctx->topWindow;
+    wmN->next_wmN = ctx->topWindow->next_wmN;
 
-    ctx->topWindow.next_wmN->pre_wmN = wmN;
-    ctx->topWindow.next_wmN = wmN;
+    ctx->topWindow->next_wmN->pre_wmN = wmN;
+    ctx->topWindow->next_wmN = wmN;
 
     ctx->window_count++;
     //排序组件
@@ -139,28 +149,31 @@ int wm_add_window(wm_ctx_t *ctx, wm_window_t* window){//w z index分配：顶层
     sort_layer(ctx->layer_ctx);
     return 0;
 }
-int wm_remove_window(wm_ctx_t *ctx, int window_id);
+int wm_remove_window(wm_ctx_t *ctx, int window_id){
+
+}
 int wm_remove_top_window(wm_ctx_t *ctx){
     if(ctx->window_count == 2){
         return -1;
     }else{
-        wm_windowNode* p = ctx->topWindow.next_wmN;
-        ctx->topWindow.next_wmN = p->next_wmN;
-        p->next_wmN->pre_wmN = &(ctx->topWindow);
+        wm_windowNode* p = ctx->topWindow->next_wmN;
+        ctx->topWindow->next_wmN = p->next_wmN;
+        p->next_wmN->pre_wmN = ctx->topWindow;
 
         free(p->window);
         p->pre_wmN = NULL;
         p->next_wmN = NULL;
         free(p);
+        ctx->window_count--;
     }
     return 0;
 }
 void wm_updateTopWindow(wm_ctx_t *ctx, int cursor_x, int cursor_y){//需确保触发的不是用户顶层窗口
     //检索鼠标点击处触发了哪个非用户TOP WINDOW的窗口
-    wm_windowNode* p = ctx->topWindow.next_wmN->next_wmN;
+    wm_windowNode* p = ctx->topWindow->next_wmN->next_wmN;
     int t = 0;
-    while(p != &(ctx->bottomWindow)){
-        if(isHitByCursor){
+    while(p != ctx->bottomWindow){
+        if(isHitByCursor(p->window->x, p->window->y, p->window->width, p->window->height, cursor_x, cursor_y)){
             t = 1;
             break;
         }
@@ -170,17 +183,17 @@ void wm_updateTopWindow(wm_ctx_t *ctx, int cursor_x, int cursor_y){//需确保�
         return;
     }
     //将触发的窗口提升到顶层，w z index为前顶层窗口的数值,重新计算并设定组件图层layer z index
-    wm_windowNode* p1 = ctx->topWindow.next_wmN;
+    wm_windowNode* p1 = ctx->topWindow->next_wmN;
     wm_windowNode* p2 = p->pre_wmN;
     wm_windowNode* p3 = p->next_wmN;
 
     p2->next_wmN = p3;
     p3->pre_wmN = p2;
 
-    p->pre_wmN = &(ctx->topWindow);
+    p->pre_wmN = ctx->topWindow;
     p->next_wmN = p1;
 
-    ctx->topWindow.next_wmN = p;
+    ctx->topWindow->next_wmN = p;
     p1->pre_wmN = p;
     p->window->w_z_index = p1->window->w_z_index;
 
@@ -196,9 +209,8 @@ void wm_updateTopWindow(wm_ctx_t *ctx, int cursor_x, int cursor_y){//需确保�
         }
         pp = pp->next_wmN;
     }
+    sort_layer(ctx->layer_ctx);
 }
-void wm_resizeWindows(int newWide, int newHeight);
-
-static int isHitByCursor(int x, int y, int width, int height, int cursor_x, int cursor_y){
+void wm_resizeWindows(wm_window_t* window, int newWidth, int newHeight){
 
 }
