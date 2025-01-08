@@ -89,7 +89,12 @@ void mouse_handler(int irq) {
 
     mouse_in.buf[mouse_in.count++] = scan_code;
 
-    if (mouse_in.count != 3) { return; }
+    disable_int_begin();
+
+    if (mouse_in.count != 3) {
+        enable_int();
+        return;
+    }
 
     tty_t* tty = NULL;
     for (int i = 0; i < NR_CONSOLES; ++i) {
@@ -100,7 +105,11 @@ void mouse_handler(int irq) {
             break;
         }
     }
-    if (tty == NULL) { return; }
+    if (tty == NULL) {
+        mouse_in.count = 0;
+        enable_int();
+        return;
+    }
 
     if (mouse_in.buf[0] & 0b001) {
         tty->mouse.buttons |= MOUSE_LEFT_BUTTON;
@@ -129,6 +138,7 @@ void mouse_handler(int irq) {
     }
 
     mouse_in.count = 0;
+    disable_int_end();
 }
 
 void init_mouse() {
