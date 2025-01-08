@@ -20,8 +20,8 @@
 // ！ because we are using qemu simulator
 // ！ and it is assumed that bga is available
 
-bool     display_available;
-uint32_t bga_buf_paddr;
+extern bool     display_available;
+extern uint32_t bga_buf_paddr;
 
 /*!
  * \brief init bga

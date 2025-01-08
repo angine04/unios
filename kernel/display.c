@@ -34,7 +34,8 @@
 
 static uint16_t bga_screen_width, bga_screen_height;
 static uint32_t bga_screen_line_size, bga_screen_buffer_size;
-
+bool     display_available;
+uint32_t bga_buf_paddr;
 /*!
  * \brief Write to VBE register
  *
