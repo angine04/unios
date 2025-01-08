@@ -43,6 +43,8 @@
         (typeof(a))(round_down((size_t)(a) + __n - 1, __n)); \
     })
 
+#define clamp(value, min, max) ((value) < (min) ? (min) : ((value) > (max) ? (max) : (value)))
+
 /*!
  * @brief Calculate the square root of a float
  *
