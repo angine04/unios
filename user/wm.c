@@ -246,11 +246,11 @@ void init_cursor(wm_ctx_t *ctx) {
 }
 
 
-int wm_add_window(wm_ctx_t *ctx, wm_window_t* window){//w z index分配：顶层始终为CURSOR_Z_INDEX-1
+int wm_add_window(wm_ctx_t *ctx, wm_window_t* window){
     //新增窗口为之前顶层用户窗口 w z index + 1
     if(ctx->window_count == 2){window->w_z_index = DESKTOP_Z_INDEX + 1;}
     else{
-        window->w_z_index = ctx->topWindow->next_wmN->window->w_z_index;
+        window->w_z_index = ctx->topWindow->next_wmN->window->w_z_index + 1;
     }
     window->id = window_id++;
     //插入新窗口
