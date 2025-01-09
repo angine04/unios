@@ -21,8 +21,6 @@
 #define COLOR_SILVER		    0x808080
 #define COLOR_TRANSPARENT	    0xff000000
 
-#define PAGE_SIZE 4096
-
 #define DISPLAY_WIDTH  1024
 #define DISPLAY_HEIGHT 768
 
@@ -38,15 +36,3 @@ typedef uint32_t pixel_t;
  * \return 0 if success, -1 if fail
  */
 void putframe(void *frame, size_t size, int pid);
-
-/*!
- * \brief copy buffer to kernel space
- *
- * \param dst destination
- * \param src source
- * \param size size of buffer
- * \param pid pid of process
- *
- * \return 0 if success, -1 if fail
- */
-int copy_to_kernel(uint32_t *dst, uint32_t *src, int size, int pid);

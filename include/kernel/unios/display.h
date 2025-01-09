@@ -2,6 +2,7 @@
 #include <unios/pci.h>
 #include <lib/stdbool.h>
 #include <lib/stdint.h>
+#include <lib/graphics.h>
 
 #define BGA_SWAP_BUFFERS 0x0101
 #define BGA_GET_HEIGHT   0x0102
@@ -12,9 +13,6 @@
 #define BGA_SET_HEIGHT   0x0107
 #define BGA_SET_UPDATE   0x0108
 #define BGA_GET_BUFFER   0x0109
-
-#define DISPLAY_WIDTH  1024
-#define DISPLAY_HEIGHT 768
 
 // ！ We are using only bga as a display device
 // ！ because we are using qemu simulator

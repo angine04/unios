@@ -35,11 +35,10 @@
 #define LED_CODE 0xED
 #define KB_ACK   0xFA
 
-#define MOUSE_UPDOWN_BOUND 15
+
 
 //! FIXME: size of keyboard input buffer
 #define KB_IN_BYTES    320
-#define MOUSE_IN_BYTES 3
 #define MAP_COLS       3    //<! Number of columns in keymap
 #define NR_SCAN_CODES  0x80 //<! Number of scan codes (rows in keymap)
 
@@ -148,11 +147,6 @@ typedef struct kb_inbuf {
     int      count;  //!*< how many bytes to be handled in the buffer
     uint8_t  buf[KB_IN_BYTES];
 } KB_INPUT;
-
-typedef struct mouse_inbuf {
-    int     count;
-    uint8_t buf[MOUSE_IN_BYTES];
-} MOUSE_INPUT;
 
 void init_keyboard();
 void keyboard_read(tty_t* p_tty);

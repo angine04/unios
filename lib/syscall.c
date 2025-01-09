@@ -196,3 +196,7 @@ char *const *getenv() {
 int putframe(void *buffer, size_t size, int pid) {
     return syscall3(NR_putframe, (uint32_t)buffer, size, pid);
 }
+
+uint32_t readmouse() {
+    return syscall0(NR_readmouse);
+}

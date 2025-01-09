@@ -3,10 +3,10 @@
 #include <unios/keymap.h>
 #include <arch/x86.h>
 #include <sys/defs.h>
+#include <unios/tracing.h>
+#include <unios/mouse.h>
 
 static KB_INPUT    kb_in;
-static MOUSE_INPUT mouse_in;
-static int         mouse_init;
 
 static int shift_l;     //<! left shift state
 static int shift_r;     //<! right shift state
@@ -79,74 +79,6 @@ void kb_handler(int irq) {
         kb_in.count++;
     }
 };
-
-void mouse_handler(int irq) {
-    uint8_t scan_code = inb(0x60);
-    if (!mouse_init) {
-        mouse_init = 1;
-        return;
-    }
-
-    mouse_in.buf[mouse_in.count++] = scan_code;
-
-    disable_int_begin();
-
-    if (mouse_in.count != 3) {
-        enable_int();
-        return;
-    }
-
-    tty_t* tty = NULL;
-    for (int i = 0; i < NR_CONSOLES; ++i) {
-        tty_t* this = tty_table[i];
-        if (this == NULL) { continue; }
-        if (!vcon_is_foreground(this->console)) {
-            tty = this;
-            break;
-        }
-    }
-    if (tty == NULL) {
-        mouse_in.count = 0;
-        enable_int();
-        return;
-    }
-
-    if (mouse_in.buf[0] & 0b001) {
-        tty->mouse.buttons |= MOUSE_LEFT_BUTTON;
-    } else {
-        tty->mouse.buttons &= ~MOUSE_LEFT_BUTTON;
-    }
-
-    if (mouse_in.buf[0] & 0b010) {
-        tty->mouse.buttons |= MOUSE_RIGHT_BUTTON;
-    } else {
-        tty->mouse.buttons &= ~MOUSE_RIGHT_BUTTON;
-    }
-
-    if (mouse_in.buf[0] & 0b100) {
-        tty->mouse.buttons |= MOUSE_MIDDLE_BUTTON;
-    } else {
-        tty->mouse.buttons &= ~MOUSE_MIDDLE_BUTTON;
-    }
-
-    //! drag
-    if (tty->mouse.buttons & MOUSE_LEFT_BUTTON) {
-        uint8_t x_dir     = mouse_in.buf[0] & 0x10;
-        uint8_t y_dir     = mouse_in.buf[0] & 0x20;
-        tty->mouse.off_x += x_dir == 0x10 ? -1 : +1;
-        tty->mouse.off_y += y_dir == 0x20 ? -1 : +1;
-    }
-
-    mouse_in.count = 0;
-    disable_int_end();
-}
-
-void init_mouse() {
-    mouse_in.count = 0;
-
-    put_irq_handler(MOUSE_IRQ, mouse_handler);
-    enable_irq(MOUSE_IRQ);
-}
 
 void init_keyboard() {
     kb_in.count  = 0;
