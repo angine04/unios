@@ -84,7 +84,9 @@ void test_layers(layer_ctx_t* layer_ctx, int pid) {
     }
 }
 
-void test_window(wm_ctx_t* ctx, int pid) {
+void dummy_window(wm_ctx_t* ctx, int pid) {
+    // does not work without this
+    // do not ask why, neither do I know
     wm_window_t* w = (wm_window_t*)malloc(sizeof(wm_window_t));
     for (int i = 0; i < MAX_CONTENTS; i++) {
         w->contents[i].x           = 0;
@@ -94,14 +96,14 @@ void test_window(wm_ctx_t* ctx, int pid) {
         w->contents[i].z_index     = 0;
         w->contents[i].layer_index = -1;
     }
-    w->x                       = 200;
-    w->y                       = 200;
-    w->width                   = 100;
-    w->height                  = 100;
-    w->contents[0].x           = 20;
-    w->contents[0].y           = 20;
-    w->contents[0].width       = 70;
-    w->contents[0].height      = 70;
+    w->x                       = 0;
+    w->y                       = 0;
+    w->width                   = 1;
+    w->height                  = 1;
+    w->contents[0].x           = 0;
+    w->contents[0].y           = 0;
+    w->contents[0].width       = 1;
+    w->contents[0].height      = 1;
     w->contents[0].z_index     = 10;
     w->contents[0].layer_index = create_layer(
         ctx->layer_ctx,
@@ -110,135 +112,11 @@ void test_window(wm_ctx_t* ctx, int pid) {
         w->contents[0].width,
         w->contents[0].height,
         10);
-    fill(ctx->layer_ctx, w->contents[0].layer_index, COLOR_SILVER);
-    rect(
-        ctx->layer_ctx,
-        w->contents[0].layer_index,
-        5,
-        5,
-        19,
-        19,
-        COLOR_LIGHTGREY);
-    circle(ctx->layer_ctx, w->contents[0].layer_index, 50, 50, 20, COLOR_BLUE);
-    circle(ctx->layer_ctx, w->contents[0].layer_index, 60, 40, 20, COLOR_RED);
-    triangle(
-        ctx->layer_ctx,
-        w->contents[0].layer_index,
-        50,
-        50,
-        70,
-        70,
-        40,
-        40,
-        COLOR_GREEN);
     w->contents[0].callbackEnable = false;
     w->contents[0].bandFunction   = NULL;
     w->contents[0].belongWindow   = w;
-
-    w->contents[1].x           = 10;
-    w->contents[1].y           = 10;
-    w->contents[1].width       = 90;
-    w->contents[1].height      = 90;
-    w->contents[1].z_index     = 1;
-    w->contents[1].layer_index = create_layer(
-        ctx->layer_ctx,
-        w->contents[1].x,
-        w->contents[1].y,
-        w->contents[1].width,
-        w->contents[1].height,
-        20);
-    fill(ctx->layer_ctx, w->contents[1].layer_index, COLOR_WHITE);
-    w->contents[1].callbackEnable = false;
-    w->contents[1].bandFunction   = NULL;
-    w->contents[1].belongWindow   = w;
-    w->layer_count                = 2;
+    ctx->layer_ctx->layers[w->contents[0].layer_index].visible = false;
     wm_add_window(ctx, w);
-
-    // Create second window
-    wm_window_t* w2 = (wm_window_t*)malloc(sizeof(wm_window_t));
-    for (int i = 0; i < MAX_CONTENTS; i++) {
-        w2->contents[i].x           = 0;
-        w2->contents[i].y           = 0;
-        w2->contents[i].width       = 0;
-        w2->contents[i].height      = 0;
-        w2->contents[i].z_index     = 0;
-        w2->contents[i].layer_index = -1;
-    }
-    w2->x                       = 400;
-    w2->y                       = 300;
-    w2->width                   = 300;
-    w2->height                  = 250;
-    w2->contents[0].x           = 0;
-    w2->contents[0].y           = 0;
-    w2->contents[0].width       = 300;
-    w2->contents[0].height      = 250;
-    w2->contents[0].z_index     = 30;
-    w2->contents[0].layer_index = create_layer(
-        ctx->layer_ctx,
-        w2->contents[0].x,
-        w2->contents[0].y,
-        w2->contents[0].width,
-        w2->contents[0].height,
-        30);
-    fill(ctx->layer_ctx, w2->contents[0].layer_index, COLOR_PURPLE);
-    w2->contents[0].callbackEnable = false;
-    w2->contents[0].bandFunction   = NULL;
-    w2->contents[0].belongWindow   = w2;
-
-    w2->contents[1].x           = 50;
-    w2->contents[1].y           = 50;
-    w2->contents[1].width       = 64;
-    w2->contents[1].height      = 64;
-    w2->contents[1].z_index     = 40;
-    w2->contents[1].layer_index = create_layer(
-        ctx->layer_ctx,
-        w2->contents[1].x,
-        w2->contents[1].y,
-        w2->contents[1].width,
-        w2->contents[1].height,
-        40);
-    use_resource(
-        ctx->layer_ctx, w2->contents[1].layer_index, RESOURCE_ICON_UNIOS, 1);
-    w2->contents[1].callbackEnable = false;
-    w2->contents[1].bandFunction   = NULL;
-    w2->contents[1].belongWindow   = w2;
-    w2->layer_count                = 2;
-    wm_add_window(ctx, w2);
-
-    // Create third window that overlaps with first window
-    wm_window_t* w3 = (wm_window_t*)malloc(sizeof(wm_window_t));
-    for (int i = 0; i < MAX_CONTENTS; i++) {
-        w3->contents[i].x           = 0;
-        w3->contents[i].y           = 0;
-        w3->contents[i].width       = 0;
-        w3->contents[i].height      = 0;
-        w3->contents[i].z_index     = 0;
-        w3->contents[i].layer_index = -1;
-    }
-    w3->x                       = 250;
-    w3->y                       = 250;
-    w3->width                   = 200;
-    w3->height                  = 200;
-    w3->contents[0].x           = 0;
-    w3->contents[0].y           = 0;
-    w3->contents[0].width       = 200;
-    w3->contents[0].height      = 200;
-    w3->contents[0].z_index     = 50;
-    w3->contents[0].layer_index = create_layer(
-        ctx->layer_ctx,
-        w3->contents[0].x,
-        w3->contents[0].y,
-        w3->contents[0].width,
-        w3->contents[0].height,
-        50);
-    fill(ctx->layer_ctx, w3->contents[0].layer_index, COLOR_YELLOW);
-    rect(
-        ctx->layer_ctx, w3->contents[0].layer_index, 5, 5, 170, 170, COLOR_RED);
-    w3->contents[0].callbackEnable = false;
-    w3->contents[0].bandFunction   = NULL;
-    w3->contents[0].belongWindow   = w3;
-    w3->layer_count                = 1;
-    wm_add_window(ctx, w3);
 }
 
 
@@ -255,7 +133,7 @@ int main() {
     init_cursor(wm_ctx);
 
     // test_layers(layer_ctx, pid);
-    test_window(wm_ctx, pid);
+    dummy_window(wm_ctx, pid);
     // test_cursor(layer_ctx, pid);
     while (1) {
         mouse_t mouse  = get_mouse_status();
