@@ -55,13 +55,8 @@ void mouse_handler(int irq) {
         return;
     }
 
-    // if (x_sign) { x_move = -x_move; }
-
-    // if (y_sign) { y_move = -y_move; }
-
     if (left_button) {
         mouse_status.buttons |= MOUSE_LEFT_BUTTON;
-        kdebug("left click\n");
     } else {
         mouse_status.buttons &= ~MOUSE_LEFT_BUTTON;
     }
@@ -72,11 +67,11 @@ void mouse_handler(int irq) {
         mouse_status.buttons &= ~MOUSE_RIGHT_BUTTON;
     }
 
-    // if (middle_button) {
-    //     mouse_status.buttons |= MOUSE_MIDDLE_BUTTON;
-    // } else {
-    //     mouse_status.buttons &= ~MOUSE_MIDDLE_BUTTON;
-    // }
+    if (middle_button) {
+        mouse_status.buttons |= MOUSE_MIDDLE_BUTTON;
+    } else {
+        mouse_status.buttons &= ~MOUSE_MIDDLE_BUTTON;
+    }
 
     mouse_status.x += x_move * MOUSE_SPEED;
     mouse_status.y -= y_move * MOUSE_SPEED;
