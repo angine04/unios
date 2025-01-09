@@ -295,23 +295,27 @@ int main() {
     // test_layers(layer_ctx, pid);
     test_window(wm_ctx, pid);
     // test_cursor(layer_ctx, pid);
-    test_window(wm_ctx, pid);
-    // test_cursor(layer_ctx, pid);
     while (1) {
         mouse_t mouse = get_mouse_status();
         int x = mouse.x;
         int y = mouse.y;
         int button = mouse.buttons;
-        move(wm_ctx->layer_ctx, wm_ctx->topWindow->window->contents[0].layer_index, x, y);
-        if (button == 1) {
-            fill(wm_ctx->layer_ctx, wm_ctx->topWindow->window->contents[0].layer_index, COLOR_GREEN);
-            //wm_updateTopWindow(wm_ctx, wm_ctx->topWindow->window->contents[0].x, wm_ctx->topWindow->window->contents[0].y);
-        } else if (button == 2) {
-            fill(wm_ctx->layer_ctx, wm_ctx->topWindow->window->contents[0].layer_index, COLOR_BLUE);
-            //wm_updateTopWindow(wm_ctx, wm_ctx->topWindow->window->contents[0].x, wm_ctx->topWindow->window->contents[0].y);
+        int cursor_layer_index = wm_ctx->topWindow->window->contents[0].layer_index;
+        move(layer_ctx, cursor_layer_index, x, y);
+        while (!mouse_event_empty()) {
+            mouse_event_t event = pop_mouse_event();
+            if (event.event == MOUSE_LEFT_DOWN) {
+                fill(layer_ctx, cursor_layer_index, COLOR_GREEN);
+                wm_updateTopWindow(wm_ctx, mouse.x, mouse.y);
+            }
+            if (event.event == MOUSE_RIGHT_DOWN) {
+                fill(layer_ctx, cursor_layer_index, COLOR_RED);
+            }
+            if (event.event == MOUSE_LEFT_UP || event.event == MOUSE_RIGHT_UP) {
+                fill(layer_ctx, cursor_layer_index, COLOR_BLACK);
+            }
         }
-        wm_updateTopWindow(wm_ctx, x, y);
-        render(wm_ctx->layer_ctx, pid);
+        render(layer_ctx, pid);
         // sleep(1000);
     }
 
@@ -357,6 +361,8 @@ void init_cursor(wm_ctx_t* ctx) {
         w->contents[0].height,
         65535);
     ctx->topWindow->window = w; // top forever
+    int cursor_layer_index = w->contents[0].layer_index;
+    fill(ctx->layer_ctx, cursor_layer_index, COLOR_BLACK);
 }
 
 int wm_add_window(wm_ctx_t* ctx, wm_window_t* window) {
