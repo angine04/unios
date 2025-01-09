@@ -24,6 +24,7 @@ typedef struct wm_windowNode {
 
 typedef struct wm_window_t{
     int id;
+    int pid;
     int x;
     int y;
     int width;

@@ -57,35 +57,66 @@ typedef struct {
 // 事件队列管理
 typedef struct event_queue_t event_queue_t;
 
-void GUI_init();
+void GUI_init(int pid);
 /*************基础控件****************** */
+/*!
+ * @brief Create a window to the window manager.
+ * @param x The x coordinate of the window
+ * @param y The y coordinate of the window
+ * @param width The width of the window
+ * @param height The height of the window
+ * @param window The window return to user
+ * @return is success
+ */
 int ui_create_widget(int x, int y, int width, int height, wm_window_t* window);
+/*!
+ * @brief Create a button to the window manager.
+ * @param x The x coordinate of the button
+ * @param y The y coordinate of the button
+ * @param width The width of the button
+ * @param height The height of the button
+ * @param text The text of the button
+ * @param callback The callback function of the button
+ * @param window The window to add the button
+ * @return button id
+ */
 int ui_create_button(int x, int y, int width, int height, char *text, void (*callback)(void*), wm_window_t* window);
+/*!
+ * @brief Create a label to the window manager.
+ * @param x The x coordinate of the label
+ * @param y The y coordinate of the label
+ * @param width The width of the label
+ * @param height The height of the label
+ * @param text The text of the label
+ * @param window The window to add the label
+ * @return label id
+ */
 int ui_create_label(int x, int y, int width, int height, char *text, wm_window_t* window);
+/*!
+ * @brief Create a image to the window manager.
+ * @param x The x coordinate of the image
+ * @param y The y coordinate of the image
+ * @param width The width of the image
+ * @param height The height of the image
+ * @param image_path The path of the image
+ * @param window The window to add the image
+ * @return image id
+ */
 int ui_create_image(int x, int y, int width, int height, char *image_path, wm_window_t* window);
+/*!
+ * @brief Create a textbox to the window manager.
+ * @param x The x coordinate of the textbox
+ * @param y The y coordinate of the textbox
+ * @param width The width of the textbox
+ * @param height The height of the textbox
+ * @param text The text of the textbox
+ * @param window The window to add the textbox
+ * @return textbox id
+ */
 int ui_create_textbox(int x, int y, int width, int height, char *text, wm_window_t* window);
 
 /*************事件处理****************** */
-// 事件处理回调函数类型
-typedef void (*event_handler_t)(event_t* event, void* user_data);
 
-// 事件处理器注册函数
-int ui_add_event_handler(int widget_id, event_type_t event_type, event_handler_t handler, void* user_data);
-int ui_remove_event_handler(int widget_id, event_type_t event_type, event_handler_t handler);
-
-// 常用事件快捷处理函数
-int ui_on_click(int widget_id, void (*callback)(void* sender));
-int ui_on_value_changed(int widget_id, void (*callback)(void* sender, void* new_value));
-int ui_on_key(int widget_id, void (*callback)(void* sender, int keycode));
-
-// 事件队列操作
-event_queue_t* event_queue_create();
-void event_queue_destroy(event_queue_t* queue);
-int event_queue_push(event_queue_t* queue, event_t* event);
-event_t* event_queue_pop(event_queue_t* queue);
-
-// 事件分发
-void event_dispatch(event_t* event);
 
 
 

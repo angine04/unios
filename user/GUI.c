@@ -14,10 +14,12 @@
 
 wm_ctx_t* window_ctx;
 layer_ctx_t* layer_ctx;
+int proc_pid;
 
-void GUI_init(){
+void GUI_init(int pid){
     window_ctx = get_window_ctx(ctx);
     layer_ctx = get_layer_ctx(ctx);
+    proc_pid = pid;
 }
 
 int ui_create_widget(int x, int y, int width, int height, wm_window_t* window){
@@ -26,7 +28,16 @@ int ui_create_widget(int x, int y, int width, int height, wm_window_t* window){
     }else{
         wm_window_t* w = (wm_window_t*)malloc(sizeof(wm_window_t));
         window = w;
+        for(int i = 0; i < MAX_CONTENTS; i++){
+            w->contents[i].x = 0;
+            w->contents[i].y = 0;
+            w->contents[i].width = 0;
+            w->contents[i].height = 0;
+            w->contents[i].z_index = 0;
+            w->contents[i].layer_index = -1;
+        }
 
+        w->pid = proc_pid;
         w->x = x;
         w->y = y;
         w->width = width;
@@ -94,7 +105,23 @@ int ui_create_widget(int x, int y, int width, int height, wm_window_t* window){
 }
 
 int ui_create_button(int x, int y, int width, int height, char *text, void (*callback)(void*), wm_window_t* window){
-
+    int free_index = -1;
+    for(int i = 0; i < MAX_CONTENTS; i++){
+        if(window->contents[i].layer_index == -1){
+            free_index = i;
+            break;
+        }
+    }
+    if(free_index == -1){
+        return -1;
+    }
+    window->contents[free_index].x = x;
+    window->contents[free_index].y = y;
+    window->contents[free_index].width = width;
+    window->contents[free_index].height = height;
+    window->contents[free_index].z_index = 30;
+    window->contents[free_index].layer_index = create_layer(layer_ctx, x, y, width, height, 30);
+    return free_index;
 }
 
 int ui_create_label(int x, int y, int width, int height, char *text, wm_window_t* window){
