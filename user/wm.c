@@ -512,11 +512,22 @@ void wm_updateTopWindow(wm_ctx_t* ctx, int cursor_x, int cursor_y) {
                     .z_index = pp->window->w_z_index * MAX_CONTENTS + 1 + i;
             }
         }
+        mark_dirty(ctx->layer_ctx,
+            pp->window->x,
+            pp->window->y,
+            pp->window->x + pp->window->width - 1,
+            pp->window->y + pp->window->height - 1);
         pp = pp->next_wmN;
     }
     sort_layer(ctx->layer_ctx);
 
-    // TODO: mark only affected area
+    // mark affected area - all windows from p1 to p3 need to be redrawn
+    // also mark the window being moved to top
+    mark_dirty(ctx->layer_ctx,
+        p->window->x,
+        p->window->y,
+        p->window->x + p->window->width - 1,
+        p->window->y + p->window->height - 1);
     mark_dirty(ctx->layer_ctx, 0, 0, 1024, 768);
 }
 
