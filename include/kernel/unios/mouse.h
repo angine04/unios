@@ -1,8 +1,7 @@
 #pragma once
 
-#include <unios/tty.h>
 #include <stdint.h>
-
+#include <stdbool.h>
 #define MOUSE_IN_BYTES     3
 #define MOUSE_SPEED 1
 
