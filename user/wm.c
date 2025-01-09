@@ -86,14 +86,22 @@ void test_layers(layer_ctx_t* layer_ctx, int pid) {
 
 void test_window(wm_ctx_t *ctx, int pid){
     wm_window_t* w = (wm_window_t*)malloc(sizeof(wm_window_t));
-    w->x = 100;
-    w->y = 100;
+    for(int i = 0; i < MAX_CONTENTS; i++){
+        w->contents[i].x = 0;
+        w->contents[i].y = 0;
+        w->contents[i].width = 0;
+        w->contents[i].height = 0;
+        w->contents[i].z_index = 0;
+        w->contents[i].layer_index = -1;
+    }
+    w->x = 200;
+    w->y = 200;
     w->width = 100;
     w->height = 100;
-    w->contents[0].x = 100;
-    w->contents[0].y = 100;
-    w->contents[0].width = 100;
-    w->contents[0].height = 100;
+    w->contents[0].x = 20;
+    w->contents[0].y = 20;
+    w->contents[0].width = 70;
+    w->contents[0].height = 70;
     w->contents[0].z_index = 10;
     w->contents[0].layer_index = create_layer(ctx->layer_ctx, w->contents[0].x, w->contents[0].y, w->contents[0].width, w->contents[0].height, 10);
     fill(ctx->layer_ctx, w->contents[0].layer_index, COLOR_SILVER);
@@ -113,21 +121,21 @@ void test_window(wm_ctx_t *ctx, int pid){
         50,
         50,
         70,
-        100,
-        90,
-        90,
+        70,
+        40,
+        40,
         COLOR_GREEN);
     w->contents[0].callbackEnable = false;
     w->contents[0].bandFunction   = NULL;
     w->contents[0].belongWindow   = w;
 
-    w->contents[1].x = 50;
-    w->contents[1].y = 50;
-    w->contents[1].width = 32;
-    w->contents[1].height = 32;
-    w->contents[1].z_index = 40;
+    w->contents[1].x = 10;
+    w->contents[1].y = 10;
+    w->contents[1].width = 90;
+    w->contents[1].height = 90;
+    w->contents[1].z_index = 1;
     w->contents[1].layer_index = create_layer(ctx->layer_ctx, w->contents[1].x, w->contents[1].y, w->contents[1].width, w->contents[1].height, 20);
-    use_icon_32(ctx->layer_ctx, w->contents[1].layer_index, 0);
+    fill(ctx->layer_ctx, w->contents[1].layer_index, COLOR_WHITE);
     w->contents[1].callbackEnable = false;
     w->contents[1].bandFunction   = NULL;
     w->contents[1].belongWindow   = w;
@@ -136,6 +144,14 @@ void test_window(wm_ctx_t *ctx, int pid){
 
     // Create second window
     wm_window_t* w2             = (wm_window_t*)malloc(sizeof(wm_window_t));
+    for(int i = 0; i < MAX_CONTENTS; i++){
+        w2->contents[i].x = 0;
+        w2->contents[i].y = 0;
+        w2->contents[i].width = 0;
+        w2->contents[i].height = 0;
+        w2->contents[i].z_index = 0;
+        w2->contents[i].layer_index = -1;
+    }
     w2->x                       = 400;
     w2->y                       = 300;
     w2->width                   = 300;
@@ -182,8 +198,16 @@ void test_window(wm_ctx_t *ctx, int pid){
 
     // Create third window that overlaps with first window
     wm_window_t* w3             = (wm_window_t*)malloc(sizeof(wm_window_t));
+    for(int i = 0; i < MAX_CONTENTS; i++){
+        w3->contents[i].x = 0;
+        w3->contents[i].y = 0;
+        w3->contents[i].width = 0;
+        w3->contents[i].height = 0;
+        w3->contents[i].z_index = 0;
+        w3->contents[i].layer_index = -1;
+    }
     w3->x                       = 250;
-    w3->y                       = 150;
+    w3->y                       = 250;
     w3->width                   = 200;
     w3->height                  = 200;
     w3->contents[0].x           = 10;
@@ -208,71 +232,45 @@ void test_window(wm_ctx_t *ctx, int pid){
     wm_add_window(ctx, w3);
 
     // Create fourth window that overlaps with second window
-    wm_window_t* w4             = (wm_window_t*)malloc(sizeof(wm_window_t));
-    w4->x                       = 450;
-    w4->y                       = 350;
-    w4->width                   = 200;
-    w4->height                  = 200;
-    w4->contents[0].x           = 10;
-    w4->contents[0].y           = 10;
-    w4->contents[0].width       = 180;
-    w4->contents[0].height      = 180;
-    w4->contents[0].z_index     = 60;
-    w4->contents[0].layer_index = create_layer(
-        ctx->layer_ctx,
-        w4->contents[0].x,
-        w4->contents[0].y,
-        w4->contents[0].width,
-        w4->contents[0].height,
-        60);
-    fill(ctx->layer_ctx, w4->contents[0].layer_index, COLOR_GREEN);
-    rect(
-        ctx->layer_ctx,
-        w4->contents[0].layer_index,
-        5,
-        5,
-        170,
-        170,
-        COLOR_BLUE);
-    w4->contents[0].callbackEnable = false;
-    w4->contents[0].bandFunction   = NULL;
-    w4->contents[0].belongWindow   = w4;
-    w4->layer_count                = 1;
-    wm_add_window(ctx, w4);
-
-    // Test window switching with simulated clicks
-    while (1) {
-        render(ctx->layer_ctx, pid);
-        // sleep(200);
-        //  uint32_t mouse_status = readmouse();
-        //  int y = mouse_status & 0b00000000000000000011111111111111;
-        //  int x = (mouse_status & 0b00001111111111111100000000000000) >> 14;
-        //  int button = (mouse_status & 0b11110000000000000000000000000000) >>
-        //  28;
-
-        // rect(ctx->layer_ctx, w->contents[0].layer_index, 100, 100, 100, 100,
-        // mouse_status);
-        render(ctx->layer_ctx, pid);
-
-        // Click on first window
-        wm_updateTopWindow(ctx, 120, 120);
-        render(ctx->layer_ctx, pid);
-        // sleep(200);
-
-        // Click on third window
-        wm_updateTopWindow(ctx, 300, 200);
-        render(ctx->layer_ctx, pid);
-        // sleep(200);
-
-        // Click on second window
-        wm_updateTopWindow(ctx, 420, 320);
-        render(ctx->layer_ctx, pid);
-        // sleep(200);
-
-        // Click on fourth window
-        wm_updateTopWindow(ctx, 500, 400);
-        render(ctx->layer_ctx, pid);
-    }
+    // wm_window_t* w4             = (wm_window_t*)malloc(sizeof(wm_window_t));
+    // for(int i = 0; i < MAX_CONTENTS; i++){
+    //     w4->contents[i].x = 0;
+    //     w4->contents[i].y = 0;
+    //     w4->contents[i].width = 0;
+    //     w4->contents[i].height = 0;
+    //     w4->contents[i].z_index = 0;
+    //     w4->contents[i].layer_index = -1;
+    // }
+    // w4->x                       = 450;
+    // w4->y                       = 350;
+    // w4->width                   = 200;
+    // w4->height                  = 200;
+    // w4->contents[0].x           = 10;
+    // w4->contents[0].y           = 10;
+    // w4->contents[0].width       = 180;
+    // w4->contents[0].height      = 180;
+    // w4->contents[0].z_index     = 60;
+    // w4->contents[0].layer_index = create_layer(
+    //     ctx->layer_ctx,
+    //     w4->contents[0].x,
+    //     w4->contents[0].y,
+    //     w4->contents[0].width,
+    //     w4->contents[0].height,
+    //     60);
+    // fill(ctx->layer_ctx, w4->contents[0].layer_index, COLOR_GREEN);
+    // rect(
+    //     ctx->layer_ctx,
+    //     w4->contents[0].layer_index,
+    //     5,
+    //     5,
+    //     170,
+    //     170,
+    //     COLOR_BLUE);
+    // w4->contents[0].callbackEnable = false;
+    // w4->contents[0].bandFunction   = NULL;
+    // w4->contents[0].belongWindow   = w4;
+    // w4->layer_count                = 1;
+    // wm_add_window(ctx, w4);
 }
 
 int main() {
@@ -297,9 +295,12 @@ int main() {
         move(wm_ctx->layer_ctx, wm_ctx->topWindow->window->contents[0].layer_index, x, y);
         if (button == 1) {
             fill(wm_ctx->layer_ctx, wm_ctx->topWindow->window->contents[0].layer_index, COLOR_GREEN);
+            //wm_updateTopWindow(wm_ctx, wm_ctx->topWindow->window->contents[0].x, wm_ctx->topWindow->window->contents[0].y);
         } else if (button == 2) {
             fill(wm_ctx->layer_ctx, wm_ctx->topWindow->window->contents[0].layer_index, COLOR_BLUE);
+            //wm_updateTopWindow(wm_ctx, wm_ctx->topWindow->window->contents[0].x, wm_ctx->topWindow->window->contents[0].y);
         }
+        wm_updateTopWindow(wm_ctx, x, y);
         render(wm_ctx->layer_ctx, pid);
         // sleep(1000);
     }
@@ -344,7 +345,7 @@ void init_cursor(wm_ctx_t* ctx) {
         w->contents[0].y,
         w->contents[0].width,
         w->contents[0].height,
-        10);
+        65535);
     ctx->topWindow->window = w; // top forever
 }
 
@@ -413,7 +414,17 @@ int wm_remove_top_window(wm_ctx_t* ctx) {
 }
 void wm_updateTopWindow(wm_ctx_t *ctx, int cursor_x, int cursor_y){
     //检索鼠标点击处触发了哪个非用户TOP WINDOW的窗口
-    wm_windowNode* p = ctx->topWindow->next_wmN->next_wmN;
+    wm_windowNode* p = ctx->topWindow->next_wmN;
+    if(isHitByCursor(
+                p->window->x,
+                p->window->y,
+                p->window->width,
+                p->window->height,
+                cursor_x,
+                cursor_y)){
+        return;//点击的是顶层窗口
+    }
+    p = ctx->topWindow->next_wmN->next_wmN;
     int            t = 0;
     while (p != ctx->bottomWindow) {
         if (isHitByCursor(
@@ -448,8 +459,12 @@ void wm_updateTopWindow(wm_ctx_t *ctx, int cursor_x, int cursor_y){
     p->window->w_z_index     = p1->window->w_z_index;
 
     for (int i = 0; i < MAX_CONTENTS; i++) {
-        ctx->layer_ctx->layers[p->window->contents[i].layer_index].z_index =
+        if(p->window->contents[i].layer_index == -1){
+            continue;
+        }else{
+            ctx->layer_ctx->layers[p->window->contents[i].layer_index].z_index =
             p->window->w_z_index * MAX_CONTENTS + 1 + i;
+        }
     }
     // 将 前顶层窗口 至 被提升的窗口之前的窗口 这些窗口w z
     // index数值-1,重新计算并设定组件图层layer z index
@@ -457,8 +472,11 @@ void wm_updateTopWindow(wm_ctx_t *ctx, int cursor_x, int cursor_y){
     while (pp != p3) {
         pp->window->w_z_index -= 1;
         for (int i = 0; i < MAX_CONTENTS; i++) {
-            ctx->layer_ctx->layers[pp->window->contents[i].layer_index]
-                .z_index = pp->window->w_z_index * MAX_CONTENTS + 1 + i;
+            if(pp->window->contents[i].layer_index == -1){
+                continue;
+            }else{
+                ctx->layer_ctx->layers[pp->window->contents[i].layer_index].z_index = pp->window->w_z_index * MAX_CONTENTS + 1 + i;
+            }
         }
         pp = pp->next_wmN;
     }
