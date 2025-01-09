@@ -60,7 +60,22 @@ int compositor_init(layer_ctx_t *ctx) {
     int pid = get_pid();
     render(ctx, pid);
 
+    ctx->is_dirty = false;
+    ctx->dirty_rect = (dirty_rect_t){0, 0, 0, 0};
     return 0;
+}
+
+void mark_dirty(layer_ctx_t *ctx, int x1, int y1, int x2, int y2) {
+    if (!ctx->is_dirty) {
+        ctx->dirty_rect = (dirty_rect_t){x1, y1, x2, y2};
+        ctx->is_dirty = true;
+    } else {
+        // expand dirty rect
+        ctx->dirty_rect.x1 = min(ctx->dirty_rect.x1, x1);
+        ctx->dirty_rect.y1 = min(ctx->dirty_rect.y1, y1);
+        ctx->dirty_rect.x2 = max(ctx->dirty_rect.x2, x2);
+        ctx->dirty_rect.y2 = max(ctx->dirty_rect.y2, y2);
+    }
 }
 
 int render(layer_ctx_t *ctx, int pid) {
@@ -71,55 +86,63 @@ int render(layer_ctx_t *ctx, int pid) {
 }
 
 int composite(layer_ctx_t *ctx) {
-    // Create array of layer indices sorted by z-index
+    if (!ctx->is_dirty) {
+        return 0;  // no dirty area, return
+    }
+
     int sorted_count = sort_layers_by_z(ctx);
+    ctx->top_z_index = ctx->layers[ctx->sorted_indices[sorted_count - 1]].z_index;
 
-    ctx->top_z_index =
-        ctx->layers[ctx->sorted_indices[sorted_count - 1]].z_index;
+    // ensure dirty area in screen range
+    int x1 = max(0, ctx->dirty_rect.x1);
+    int y1 = max(0, ctx->dirty_rect.y1);
+    int x2 = min(DISPLAY_WIDTH - 1, ctx->dirty_rect.x2);
+    int y2 = min(DISPLAY_HEIGHT - 1, ctx->dirty_rect.y2);
 
-    // Clear screen buffer
-    // memset(screen_vram, 0, DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(pixel_t));
-
-    // composite layers in z-index order
+    // update pixels in dirty area
     for (int i = 0; i < sorted_count; i++) {
         layer_t *layer = &ctx->layers[ctx->sorted_indices[i]];
         if (!layer->visible) continue;
 
-        for (int y = 0; y < layer->height; y++) {
-            for (int x = 0; x < layer->width; x++) {
-                int screen_x = layer->pos_x + x;
-                int screen_y = layer->pos_y + y;
+        // calculate intersection of layer and dirty area
+        int layer_x1 = max(x1, layer->pos_x);
+        int layer_y1 = max(y1, layer->pos_y);
+        int layer_x2 = min(x2, layer->pos_x + layer->width - 1);
+        int layer_y2 = min(y2, layer->pos_y + layer->height - 1);
 
-                if (screen_x >= 0 && screen_x < DISPLAY_WIDTH && screen_y >= 0
-                    && screen_y < DISPLAY_HEIGHT) {
-                    pixel_t src_pixel = layer->buf[y * layer->width + x];
-                    pixel_t dst_pixel =
-                        screen_vram[screen_y * DISPLAY_WIDTH + screen_x];
+        if (layer_x1 > layer_x2 || layer_y1 > layer_y2) continue;
 
-                    // Get alpha value from highest 8 bits
-                    uint8_t alpha = (src_pixel >> 24) & 0xFF;
+        for (int y = layer_y1; y <= layer_y2; y++) {
+            for (int x = layer_x1; x <= layer_x2; x++) {
+                int layer_local_x = x - layer->pos_x;
+                int layer_local_y = y - layer->pos_y;
 
-                    if (alpha == 0x00) {
-                        // Fully opaque
-                        screen_vram[screen_y * DISPLAY_WIDTH + screen_x] =
-                            src_pixel;
-                    } else if (alpha != 0xFF) {
-                        // Partially transparent - blend colors
-                        float   transparency = alpha / 255.0f;
-                        pixel_t blended =
-                            blend(src_pixel, dst_pixel, 1.0f - transparency);
-                        uint8_t r = (blended >> 16) & 0xFF;
-                        uint8_t g = (blended >> 8) & 0xFF;
-                        uint8_t b = blended & 0xFF;
+                pixel_t src_pixel = layer->buf[layer_local_y * layer->width + layer_local_x];
+                pixel_t dst_pixel = screen_vram[y * DISPLAY_WIDTH + x];
 
-                        screen_vram[screen_y * DISPLAY_WIDTH + screen_x] =
-                            (r << 16) | (g << 8) | b;
-                    }
+                // Get alpha value from highest 8 bits
+                uint8_t alpha = (src_pixel >> 24) & 0xFF;
+
+                if (alpha == 0x00) {
+                    // Fully opaque
+                    screen_vram[y * DISPLAY_WIDTH + x] = src_pixel;
+                } else if (alpha != 0xFF) {
+                    // Partially transparent - blend colors
+                    float   transparency = alpha / 255.0f;
+                    pixel_t blended = blend(src_pixel, dst_pixel, 1.0f - transparency);
+                    uint8_t r = (blended >> 16) & 0xFF;
+                    uint8_t g = (blended >> 8) & 0xFF;
+                    uint8_t b = blended & 0xFF;
+
+                    screen_vram[y * DISPLAY_WIDTH + x] = (r << 16) | (g << 8) | b;
                 }
             }
         }
     }
 
+    // reset dirty area
+    ctx->is_dirty = false;
+    ctx->dirty_rect = (dirty_rect_t){0, 0, 0, 0};
     return 0;
 }
 
@@ -198,6 +221,12 @@ int fill(layer_ctx_t *ctx, int layer_index, pixel_t color) {
     for (int i = 0; i < layer->width * layer->height; i++) {
         layer->buf[i] = color;
     }
+    // 标记整个图层区域为脏
+    mark_dirty(ctx,
+        layer->pos_x, layer->pos_y,
+        layer->pos_x + layer->width - 1,
+        layer->pos_y + layer->height - 1
+    );
     return 0;
 }
 
@@ -222,12 +251,28 @@ int rect(
             layer->buf[row * layer->width + col] = color;
         }
     }
+    // mark affected area as dirty
+    mark_dirty(ctx,
+        layer->pos_x + x1, layer->pos_y + y1,
+        layer->pos_x + x2 - 1, layer->pos_y + y2 - 1
+    );
     return 0;
 }
 
 int move(layer_ctx_t *ctx, int layer_index, int x, int y) {
-    ctx->layers[layer_index].pos_x = x;
-    ctx->layers[layer_index].pos_y = y;
+    layer_t *layer = &ctx->layers[layer_index];
+    // mark old position as dirty
+    mark_dirty(ctx,
+        layer->pos_x, layer->pos_y,
+        layer->pos_x + layer->width - 1,
+        layer->pos_y + layer->height - 1
+    );
+
+    layer->pos_x = x;
+    layer->pos_y = y;
+
+    // mark new position as dirty
+    mark_dirty(ctx, x, y, x + layer->width - 1, y + layer->height - 1);
     return 0;
 }
 
@@ -304,6 +349,11 @@ int circle(
             }
         }
     }
+    // mark circle bounding box as dirty
+    mark_dirty(ctx,
+        layer->pos_x + center_x - radius, layer->pos_y + center_y - radius,
+        layer->pos_x + center_x + radius, layer->pos_y + center_y + radius
+    );
     return 0;
 }
 
@@ -375,6 +425,11 @@ int triangle(
         }
     }
 
+    // mark triangle bounding box as dirty
+    mark_dirty(ctx,
+        layer->pos_x + min_x, layer->pos_y + min_y,
+        layer->pos_x + max_x, layer->pos_y + max_y
+    );
     return 0;
 }
 
@@ -431,21 +486,45 @@ int resize(layer_ctx_t *ctx, int layer_index, int width, int height) {
     layer->height = height;
     memset(layer->buf, 0, width * height * 4);
     free(old_buf);
+    // mark old area as dirty
+    mark_dirty(ctx,
+        layer->pos_x, layer->pos_y,
+        layer->pos_x + layer->width - 1, layer->pos_y + layer->height - 1
+    );
+    // mark new area as dirty
+    mark_dirty(ctx,
+        layer->pos_x, layer->pos_y,
+        layer->pos_x + width - 1, layer->pos_y + height - 1
+    );
     return 0;
 }
 
 int clear(layer_ctx_t *ctx, int layer_index) {
+    layer_t *layer = &ctx->layers[layer_index];
     fill(ctx, layer_index, COLOR_TRANSPARENT);
+    // fill() has handled dirty area marking
     return 0;
 }
 
 int show(layer_ctx_t *ctx, int layer_index) {
+    layer_t *layer = &ctx->layers[layer_index];
     ctx->layers[layer_index].visible = true;
+    // mark whole layer area as dirty
+    mark_dirty(ctx,
+        layer->pos_x, layer->pos_y,
+        layer->pos_x + layer->width - 1, layer->pos_y + layer->height - 1
+    );
     return 0;
 }
 
 int hide(layer_ctx_t *ctx, int layer_index) {
+    layer_t *layer = &ctx->layers[layer_index];
     ctx->layers[layer_index].visible = false;
+    // mark whole layer area as dirty
+    mark_dirty(ctx,
+        layer->pos_x, layer->pos_y,
+        layer->pos_x + layer->width - 1, layer->pos_y + layer->height - 1
+    );
     return 0;
 }
 

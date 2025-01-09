@@ -515,6 +515,9 @@ void wm_updateTopWindow(wm_ctx_t* ctx, int cursor_x, int cursor_y) {
         pp = pp->next_wmN;
     }
     sort_layer(ctx->layer_ctx);
+
+    // TODO: mark only affected area
+    mark_dirty(ctx->layer_ctx, 0, 0, 1024, 768);
 }
 
 void wm_resizeWindows(wm_window_t* window, int newWidth, int newHeight) {}
