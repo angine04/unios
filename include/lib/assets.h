@@ -7,5 +7,6 @@ typedef struct resource_s {
 
 enum {
      RESOURCE_ICON_UNIOS = 0,
+     RESOURCE_IMAGE_WALLPAPER,
      RESOURCE_TEST,
 };

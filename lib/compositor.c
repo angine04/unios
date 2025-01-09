@@ -8,7 +8,6 @@
 #include <compositor.h>
 #include <malloc.h>
 #include <math.h>
-
 #define USE_ASSETS_DATA
 
 #include <assets_data.h>
@@ -43,25 +42,22 @@ static int sort_layers_by_z(layer_ctx_t *ctx) {
 int compositor_init(layer_ctx_t *ctx) {
     ctx->layer_num = 0;
     for (int i = 0; i < LAYER_MAX_NUM; i++) {
-        ctx->layers[i].in_use  = false;
-        ctx->layers[i].visible = false;
-        ctx->layers[i].pos_x   = 0;
-        ctx->layers[i].pos_y   = 0;
-        ctx->layers[i].width   = 0;
-        ctx->layers[i].height  = 0;
-        ctx->layers[i].buf     = NULL;
-        ctx->layers[i].z_index = 0;
+        ctx->layers[i].in_use    = false;
+        ctx->layers[i].visible   = false;
+        ctx->layers[i].pos_x     = 0;
+        ctx->layers[i].pos_y     = 0;
+        ctx->layers[i].width     = 0;
+        ctx->layers[i].height    = 0;
+        ctx->layers[i].buf       = NULL;
+        ctx->layers[i].z_index   = 0;
+        ctx->layers[i].use_alpha = false;
     }
 
-    // create background layer
     int background_layer_index =
         create_layer(ctx, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, 0);
-    assert(background_layer_index != -1);
-
-    // fill background layer
-    for (int i = 0; i < DISPLAY_WIDTH * DISPLAY_HEIGHT; i++) {
-        ctx->layers[background_layer_index].buf[i] = COLOR_TEAL;
-    }
+    fill(ctx, background_layer_index, COLOR_TEAL);
+    int pid = get_pid();
+    render(ctx, pid);
 
     return 0;
 }
@@ -77,7 +73,8 @@ int composite(layer_ctx_t *ctx) {
     // Create array of layer indices sorted by z-index
     int sorted_count = sort_layers_by_z(ctx);
 
-    ctx->top_z_index = ctx->layers[ctx->sorted_indices[sorted_count - 1]].z_index;
+    ctx->top_z_index =
+        ctx->layers[ctx->sorted_indices[sorted_count - 1]].z_index;
 
     // Clear screen buffer
     // memset(screen_vram, 0, DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(pixel_t));
@@ -108,7 +105,8 @@ int composite(layer_ctx_t *ctx) {
                     } else if (alpha != 0xFF) {
                         // Partially transparent - blend colors
                         float   transparency = alpha / 255.0f;
-                        pixel_t blended = blend(src_pixel, dst_pixel, 1.0f - transparency);
+                        pixel_t blended =
+                            blend(src_pixel, dst_pixel, 1.0f - transparency);
                         uint8_t r = (blended >> 16) & 0xFF;
                         uint8_t g = (blended >> 8) & 0xFF;
                         uint8_t b = blended & 0xFF;
@@ -259,6 +257,7 @@ pixel_t blend(pixel_t color1, pixel_t color2, float alpha) {
 
     return (r_out << 16) | (g_out << 8) | b_out;
 }
+
 // Blend two colors with alpha using simple blending
 pixel_t blend_simple(pixel_t color1, pixel_t color2, float alpha) {
     // Extract RGB components
@@ -294,8 +293,8 @@ int circle(
                 float alpha = 1.0f;
                 if (dist > radius - 1.0f) { alpha = radius - dist; }
 
-                layer->buf[y * layer->width + x] = blend(
-                    color, layer->buf[y * layer->width + x], alpha);
+                layer->buf[y * layer->width + x] =
+                    blend(color, layer->buf[y * layer->width + x], alpha);
             }
         }
     }
@@ -363,9 +362,9 @@ int triangle(
             }
 
             if (samples_inside > 0) {
-                float alpha                      = samples_inside / 4.0f;
-                layer->buf[y * layer->width + x] = blend(
-                    color, layer->buf[y * layer->width + x], alpha);
+                float alpha = samples_inside / 4.0f;
+                layer->buf[y * layer->width + x] =
+                    blend(color, layer->buf[y * layer->width + x], alpha);
             }
         }
     }
@@ -384,19 +383,35 @@ int get_top_z_index(layer_ctx_t *ctx) {
     return ctx->top_z_index;
 }
 
-int use_resource(layer_ctx_t *ctx, int layer_index, int resource_index) {
+int use_resource(
+    layer_ctx_t *ctx, int layer_index, int resource_index, int stretch) {
     layer_t *layer = &ctx->layers[layer_index];
-    if (layer->width < resources[resource_index].width || layer->height < resources[resource_index].height) {
+    if (layer->width < resources[resource_index].width
+        || layer->height < resources[resource_index].height) {
         return -1;
     }
     for (int y = 0; y < resources[resource_index].height; y++) {
         for (int x = 0; x < resources[resource_index].width; x++) {
-            layer->buf[y * resources[resource_index].width + x] = resources[resource_index].buf[y * resources[resource_index].width + x];
+            if (stretch >= 2) {
+                rect(
+                    ctx,
+                    layer_index,
+                    x * stretch,
+                    y * stretch,
+                    stretch,
+                    stretch,
+                    resources[resource_index]
+                        .buf[y * resources[resource_index].width + x]);
+            } else {
+                layer->buf[y * resources[resource_index].width + x] =
+                    resources[resource_index]
+                        .buf[y * resources[resource_index].width + x];
+            }
         }
     }
     return 0;
 }
 
-void sort_layer(layer_ctx_t* ctx){
+void sort_layer(layer_ctx_t *ctx) {
     sort_layers_by_z(ctx);
 }

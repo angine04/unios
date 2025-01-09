@@ -16,7 +16,7 @@ typedef struct {
     int      height;
     pixel_t *buf;
     int      z_index;
-    float    opacity;
+    bool     use_alpha;
 } layer_t;
 
 /*!
@@ -63,12 +63,7 @@ int composite(layer_ctx_t *ctx);
  * @return index of the layer, -1 on failure
  */
 int create_layer(
-    layer_ctx_t *ctx,
-    int          pos_x,
-    int          pos_y,
-    int          width,
-    int          height,
-    int          z_index);
+    layer_ctx_t *ctx, int pos_x, int pos_y, int width, int height, int z_index);
 
 /*!
  * @brief Release a layer
@@ -98,7 +93,14 @@ int fill(layer_ctx_t *ctx, int layer_index, pixel_t color);
  * @param color The color of the rectangle
  * @return 0 on success, -1 on failure
  */
-int rect(layer_ctx_t *ctx, int layer_index, int x, int y, int width, int height, pixel_t color);
+int rect(
+    layer_ctx_t *ctx,
+    int          layer_index,
+    int          x,
+    int          y,
+    int          width,
+    int          height,
+    pixel_t      color);
 
 /*!
  * @brief Move a layer
@@ -120,7 +122,13 @@ int move(layer_ctx_t *ctx, int layer_index, int x, int y);
  * @param color The color of the circle
  * @return 0 on success, -1 on failure
  */
-int circle(layer_ctx_t *ctx, int layer_index, int center_x, int center_y, int radius, pixel_t color);
+int circle(
+    layer_ctx_t *ctx,
+    int          layer_index,
+    int          center_x,
+    int          center_y,
+    int          radius,
+    pixel_t      color);
 
 /*!
  * @brief Blend two colors in gamma-correct linear space with alpha
@@ -156,7 +164,16 @@ pixel_t blend_simple(pixel_t color1, pixel_t color2, float alpha);
  * @param color The color of the triangle
  * @return 0 on success, -1 on failure
  */
-int triangle(layer_ctx_t *ctx, int layer_index, int x1, int y1, int x2, int y2, int x3, int y3, pixel_t color);
+int triangle(
+    layer_ctx_t *ctx,
+    int          layer_index,
+    int          x1,
+    int          y1,
+    int          x2,
+    int          y2,
+    int          x3,
+    int          y3,
+    pixel_t      color);
 
 /*!
  * @brief put a layer on top
@@ -173,6 +190,18 @@ int top(layer_ctx_t *ctx, int layer_index);
  */
 int get_top_z_index(layer_ctx_t *ctx);
 
-int use_resource(layer_ctx_t *ctx, int layer_index, int resource_index);
+/*!
+ * @brief Use a resource
+ * @param ctx The compositor context
+ * @param layer_index The index of the layer
+ * @param resource_index The index of the resource
+ * @param stretch The stretch factor
+ * @return 0 on success, -1 on failure
+ */
+int use_resource(layer_ctx_t *ctx, int layer_index, int resource_index, int stretch);
 
-void sort_layer(layer_ctx_t* ctx);
+/*!
+ * @brief Sort the layers by z index
+ * @param ctx The compositor context
+ */
+void sort_layer(layer_ctx_t *ctx);

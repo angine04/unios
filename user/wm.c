@@ -10,6 +10,10 @@
 #include <malloc.h>
 #include <lib/mouse.h>
 
+#define USE_WALLPAPER 1
+
+#define WALLPAPER_COLOR 0xB5D4DB
+
 static int window_id = 2;
 
 static int isHitByCursor(
@@ -61,7 +65,7 @@ void test_layers(layer_ctx_t* layer_ctx, int pid) {
     render(layer_ctx, pid);
     int icon_layer_index = create_layer(layer_ctx, 300, 300, 32, 32, 3);
     assert(icon_layer_index != -1);
-    use_resource(layer_ctx, icon_layer_index, 0);
+    use_resource(layer_ctx, icon_layer_index, 0, 1);
     render(layer_ctx, pid);
 
     while (1) {
@@ -73,10 +77,6 @@ void test_layers(layer_ctx_t* layer_ctx, int pid) {
             // Reset position to top left
             move(layer_ctx, layer_index, 0, 0);
             top(layer_ctx, layer_index);
-            layer_ctx->layers[layer_index2].opacity -= 0.02f;
-            if (layer_ctx->layers[layer_index2].opacity < 0) {
-                layer_ctx->layers[layer_index2].opacity = 0;
-            }
         } else {
             move(layer_ctx, layer_index, x + 1, y + 1);
         }
@@ -84,26 +84,32 @@ void test_layers(layer_ctx_t* layer_ctx, int pid) {
     }
 }
 
-void test_window(wm_ctx_t *ctx, int pid){
+void test_window(wm_ctx_t* ctx, int pid) {
     wm_window_t* w = (wm_window_t*)malloc(sizeof(wm_window_t));
-    for(int i = 0; i < MAX_CONTENTS; i++){
-        w->contents[i].x = 0;
-        w->contents[i].y = 0;
-        w->contents[i].width = 0;
-        w->contents[i].height = 0;
-        w->contents[i].z_index = 0;
+    for (int i = 0; i < MAX_CONTENTS; i++) {
+        w->contents[i].x           = 0;
+        w->contents[i].y           = 0;
+        w->contents[i].width       = 0;
+        w->contents[i].height      = 0;
+        w->contents[i].z_index     = 0;
         w->contents[i].layer_index = -1;
     }
-    w->x = 200;
-    w->y = 200;
-    w->width = 100;
-    w->height = 100;
-    w->contents[0].x = 20;
-    w->contents[0].y = 20;
-    w->contents[0].width = 70;
-    w->contents[0].height = 70;
-    w->contents[0].z_index = 10;
-    w->contents[0].layer_index = create_layer(ctx->layer_ctx, w->contents[0].x, w->contents[0].y, w->contents[0].width, w->contents[0].height, 10);
+    w->x                       = 200;
+    w->y                       = 200;
+    w->width                   = 100;
+    w->height                  = 100;
+    w->contents[0].x           = 20;
+    w->contents[0].y           = 20;
+    w->contents[0].width       = 70;
+    w->contents[0].height      = 70;
+    w->contents[0].z_index     = 10;
+    w->contents[0].layer_index = create_layer(
+        ctx->layer_ctx,
+        w->contents[0].x,
+        w->contents[0].y,
+        w->contents[0].width,
+        w->contents[0].height,
+        10);
     fill(ctx->layer_ctx, w->contents[0].layer_index, COLOR_SILVER);
     rect(
         ctx->layer_ctx,
@@ -129,12 +135,18 @@ void test_window(wm_ctx_t *ctx, int pid){
     w->contents[0].bandFunction   = NULL;
     w->contents[0].belongWindow   = w;
 
-    w->contents[1].x = 10;
-    w->contents[1].y = 10;
-    w->contents[1].width = 90;
-    w->contents[1].height = 90;
-    w->contents[1].z_index = 1;
-    w->contents[1].layer_index = create_layer(ctx->layer_ctx, w->contents[1].x, w->contents[1].y, w->contents[1].width, w->contents[1].height, 20);
+    w->contents[1].x           = 10;
+    w->contents[1].y           = 10;
+    w->contents[1].width       = 90;
+    w->contents[1].height      = 90;
+    w->contents[1].z_index     = 1;
+    w->contents[1].layer_index = create_layer(
+        ctx->layer_ctx,
+        w->contents[1].x,
+        w->contents[1].y,
+        w->contents[1].width,
+        w->contents[1].height,
+        20);
     fill(ctx->layer_ctx, w->contents[1].layer_index, COLOR_WHITE);
     w->contents[1].callbackEnable = false;
     w->contents[1].bandFunction   = NULL;
@@ -143,13 +155,13 @@ void test_window(wm_ctx_t *ctx, int pid){
     wm_add_window(ctx, w);
 
     // Create second window
-    wm_window_t* w2             = (wm_window_t*)malloc(sizeof(wm_window_t));
-    for(int i = 0; i < MAX_CONTENTS; i++){
-        w2->contents[i].x = 0;
-        w2->contents[i].y = 0;
-        w2->contents[i].width = 0;
-        w2->contents[i].height = 0;
-        w2->contents[i].z_index = 0;
+    wm_window_t* w2 = (wm_window_t*)malloc(sizeof(wm_window_t));
+    for (int i = 0; i < MAX_CONTENTS; i++) {
+        w2->contents[i].x           = 0;
+        w2->contents[i].y           = 0;
+        w2->contents[i].width       = 0;
+        w2->contents[i].height      = 0;
+        w2->contents[i].z_index     = 0;
         w2->contents[i].layer_index = -1;
     }
     w2->x                       = 400;
@@ -185,7 +197,8 @@ void test_window(wm_ctx_t *ctx, int pid){
         w2->contents[1].width,
         w2->contents[1].height,
         40);
-    use_resource(ctx->layer_ctx, w2->contents[1].layer_index, RESOURCE_ICON_UNIOS);
+    use_resource(
+        ctx->layer_ctx, w2->contents[1].layer_index, RESOURCE_ICON_UNIOS, 1);
     w2->contents[1].callbackEnable = false;
     w2->contents[1].bandFunction   = NULL;
     w2->contents[1].belongWindow   = w2;
@@ -193,13 +206,13 @@ void test_window(wm_ctx_t *ctx, int pid){
     wm_add_window(ctx, w2);
 
     // Create third window that overlaps with first window
-    wm_window_t* w3             = (wm_window_t*)malloc(sizeof(wm_window_t));
-    for(int i = 0; i < MAX_CONTENTS; i++){
-        w3->contents[i].x = 0;
-        w3->contents[i].y = 0;
-        w3->contents[i].width = 0;
-        w3->contents[i].height = 0;
-        w3->contents[i].z_index = 0;
+    wm_window_t* w3 = (wm_window_t*)malloc(sizeof(wm_window_t));
+    for (int i = 0; i < MAX_CONTENTS; i++) {
+        w3->contents[i].x           = 0;
+        w3->contents[i].y           = 0;
+        w3->contents[i].width       = 0;
+        w3->contents[i].height      = 0;
+        w3->contents[i].z_index     = 0;
         w3->contents[i].layer_index = -1;
     }
     w3->x                       = 250;
@@ -220,61 +233,21 @@ void test_window(wm_ctx_t *ctx, int pid){
         50);
     fill(ctx->layer_ctx, w3->contents[0].layer_index, COLOR_YELLOW);
     rect(
-        ctx->layer_ctx, w3->contents[0].layer_index, 5, 5, 170, 170,
-        COLOR_RED);
+        ctx->layer_ctx, w3->contents[0].layer_index, 5, 5, 170, 170, COLOR_RED);
     w3->contents[0].callbackEnable = false;
     w3->contents[0].bandFunction   = NULL;
     w3->contents[0].belongWindow   = w3;
     w3->layer_count                = 1;
     wm_add_window(ctx, w3);
-
-    // Create fourth window that overlaps with second window
-    // wm_window_t* w4             = (wm_window_t*)malloc(sizeof(wm_window_t));
-    // for(int i = 0; i < MAX_CONTENTS; i++){
-    //     w4->contents[i].x = 0;
-    //     w4->contents[i].y = 0;
-    //     w4->contents[i].width = 0;
-    //     w4->contents[i].height = 0;
-    //     w4->contents[i].z_index = 0;
-    //     w4->contents[i].layer_index = -1;
-    // }
-    // w4->x                       = 450;
-    // w4->y                       = 350;
-    // w4->width                   = 200;
-    // w4->height                  = 200;
-    // w4->contents[0].x           = 10;
-    // w4->contents[0].y           = 10;
-    // w4->contents[0].width       = 180;
-    // w4->contents[0].height      = 180;
-    // w4->contents[0].z_index     = 60;
-    // w4->contents[0].layer_index = create_layer(
-    //     ctx->layer_ctx,
-    //     w4->contents[0].x,
-    //     w4->contents[0].y,
-    //     w4->contents[0].width,
-    //     w4->contents[0].height,
-    //     60);
-    // fill(ctx->layer_ctx, w4->contents[0].layer_index, COLOR_GREEN);
-    // rect(
-    //     ctx->layer_ctx,
-    //     w4->contents[0].layer_index,
-    //     5,
-    //     5,
-    //     170,
-    //     170,
-    //     COLOR_BLUE);
-    // w4->contents[0].callbackEnable = false;
-    // w4->contents[0].bandFunction   = NULL;
-    // w4->contents[0].belongWindow   = w4;
-    // w4->layer_count                = 1;
-    // wm_add_window(ctx, w4);
 }
+
 
 int main() {
     int pid = get_pid();
 
     wm_ctx_t* wm_ctx = malloc(sizeof(wm_ctx_t));
     wm_init(wm_ctx);
+    render(wm_ctx->layer_ctx, pid);
 
     layer_ctx_t* layer_ctx = wm_ctx->layer_ctx;
 
@@ -282,14 +255,15 @@ int main() {
     init_cursor(wm_ctx);
 
     // test_layers(layer_ctx, pid);
-    // test_window(wm_ctx, pid);
+    test_window(wm_ctx, pid);
     // test_cursor(layer_ctx, pid);
     while (1) {
-        mouse_t mouse = get_mouse_status();
-        int x = mouse.x;
-        int y = mouse.y;
-        int button = mouse.buttons;
-        int cursor_layer_index = wm_ctx->topWindow->window->contents[0].layer_index;
+        mouse_t mouse  = get_mouse_status();
+        int     x      = mouse.x;
+        int     y      = mouse.y;
+        int     button = mouse.buttons;
+        int     cursor_layer_index =
+            wm_ctx->topWindow->window->contents[0].layer_index;
         move(layer_ctx, cursor_layer_index, x, y);
         while (!mouse_event_empty()) {
             mouse_event_t event = pop_mouse_event();
@@ -326,10 +300,29 @@ void wm_init(wm_ctx_t* ctx) {
 }
 
 void init_desktop(wm_ctx_t* ctx) {
-    wm_window_t* w            = (wm_window_t*)malloc(sizeof(wm_window_t));
-    w->w_z_index              = DESKTOP_Z_INDEX;
-    w->id                     = 0;
-    ctx->bottomWindow->window = w; // bottom forever
+    wm_window_t* w             = (wm_window_t*)malloc(sizeof(wm_window_t));
+    w->w_z_index               = DESKTOP_Z_INDEX;
+    w->id                      = 0;
+    w->x                       = 0;
+    w->y                       = 0;
+    w->contents[0].x           = 0;
+    w->contents[0].y           = 0;
+    w->contents[0].width       = DISPLAY_WIDTH;
+    w->contents[0].height      = DISPLAY_HEIGHT;
+    w->contents[0].z_index     = 0;
+    w->contents[0].layer_index = create_layer(
+        ctx->layer_ctx,
+        w->contents[0].x,
+        w->contents[0].y,
+        w->contents[0].width,
+        w->contents[0].height,
+        0);
+
+    if (USE_WALLPAPER) {
+        use_resource(ctx->layer_ctx, w->contents[0].layer_index, RESOURCE_IMAGE_WALLPAPER, 4);
+    }else{
+        fill(ctx->layer_ctx, w->contents[0].layer_index, WALLPAPER_COLOR);
+    }
 }
 
 void init_cursor(wm_ctx_t* ctx) {
@@ -417,20 +410,21 @@ int wm_remove_top_window(wm_ctx_t* ctx) {
     }
     return 0;
 }
-void wm_updateTopWindow(wm_ctx_t *ctx, int cursor_x, int cursor_y){
-    //检索鼠标点击处触发了哪个非用户TOP WINDOW的窗口
+
+void wm_updateTopWindow(wm_ctx_t* ctx, int cursor_x, int cursor_y) {
+    // 检索鼠标点击处触发了哪个非用户TOP WINDOW的窗口
     wm_windowNode* p = ctx->topWindow->next_wmN;
-    if(isHitByCursor(
-                p->window->x,
-                p->window->y,
-                p->window->width,
-                p->window->height,
-                cursor_x,
-                cursor_y)){
-        return;//点击的是顶层窗口
+    if (isHitByCursor(
+            p->window->x,
+            p->window->y,
+            p->window->width,
+            p->window->height,
+            cursor_x,
+            cursor_y)) {
+        return; // 点击的是顶层窗口
     }
-    p = ctx->topWindow->next_wmN->next_wmN;
-    int            t = 0;
+    p     = ctx->topWindow->next_wmN->next_wmN;
+    int t = 0;
     while (p != ctx->bottomWindow) {
         if (isHitByCursor(
                 p->window->x,
@@ -464,11 +458,11 @@ void wm_updateTopWindow(wm_ctx_t *ctx, int cursor_x, int cursor_y){
     p->window->w_z_index     = p1->window->w_z_index;
 
     for (int i = 0; i < MAX_CONTENTS; i++) {
-        if(p->window->contents[i].layer_index == -1){
+        if (p->window->contents[i].layer_index == -1) {
             continue;
-        }else{
+        } else {
             ctx->layer_ctx->layers[p->window->contents[i].layer_index].z_index =
-            p->window->w_z_index * MAX_CONTENTS + 1 + i;
+                p->window->w_z_index * MAX_CONTENTS + 1 + i;
         }
     }
     // 将 前顶层窗口 至 被提升的窗口之前的窗口 这些窗口w z
@@ -477,10 +471,11 @@ void wm_updateTopWindow(wm_ctx_t *ctx, int cursor_x, int cursor_y){
     while (pp != p3) {
         pp->window->w_z_index -= 1;
         for (int i = 0; i < MAX_CONTENTS; i++) {
-            if(pp->window->contents[i].layer_index == -1){
+            if (pp->window->contents[i].layer_index == -1) {
                 continue;
-            }else{
-                ctx->layer_ctx->layers[pp->window->contents[i].layer_index].z_index = pp->window->w_z_index * MAX_CONTENTS + 1 + i;
+            } else {
+                ctx->layer_ctx->layers[pp->window->contents[i].layer_index]
+                    .z_index = pp->window->w_z_index * MAX_CONTENTS + 1 + i;
             }
         }
         pp = pp->next_wmN;
