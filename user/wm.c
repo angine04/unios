@@ -287,10 +287,20 @@ int main() {
     init_cursor(wm_ctx);
 
     // test_layers(layer_ctx, pid);
-    // test_window(wm_ctx, pid);
-    test_cursor(layer_ctx, pid);
+    test_window(wm_ctx, pid);
+    // test_cursor(layer_ctx, pid);
     while (1) {
-        render(layer_ctx, pid);
+        mouse_t mouse = get_mouse_status();
+        int x = mouse.x;
+        int y = mouse.y;
+        int button = mouse.buttons;
+        move(wm_ctx->layer_ctx, wm_ctx->topWindow->window->contents[0].layer_index, x, y);
+        if (button == 1) {
+            fill(wm_ctx->layer_ctx, wm_ctx->topWindow->window->contents[0].layer_index, COLOR_GREEN);
+        } else if (button == 2) {
+            fill(wm_ctx->layer_ctx, wm_ctx->topWindow->window->contents[0].layer_index, COLOR_BLUE);
+        }
+        render(wm_ctx->layer_ctx, pid);
         // sleep(1000);
     }
 
@@ -322,10 +332,10 @@ void init_cursor(wm_ctx_t* ctx) {
     wm_window_t* w             = (wm_window_t*)malloc(sizeof(wm_window_t));
     w->w_z_index               = CURSOR_Z_INDEX;
     w->id                      = 1;
-    w->x                       = 100;
-    w->y                       = 100;
-    w->contents[0].x           = 100;
-    w->contents[0].y           = 100;
+    w->x                       = 1;
+    w->y                       = 1;
+    w->contents[0].x           = 1;
+    w->contents[0].y           = 1;
     w->contents[0].width       = 10;
     w->contents[0].height      = 10;
     w->contents[0].layer_index = create_layer(
@@ -335,7 +345,7 @@ void init_cursor(wm_ctx_t* ctx) {
         w->contents[0].width,
         w->contents[0].height,
         10);
-    ctx->bottomWindow->window = w; // bottom forever
+    ctx->topWindow->window = w; // top forever
 }
 
 int wm_add_window(wm_ctx_t* ctx, wm_window_t* window) {
