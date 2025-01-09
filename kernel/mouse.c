@@ -4,6 +4,7 @@
 #include <arch/x86.h>
 #include <sys/defs.h>
 #include <unios/tracing.h>
+#include <unios/syscall.h>
 #include <math.h>
 
 static mouse_status_t mouse_status;
@@ -37,7 +38,7 @@ void mouse_handler(int irq) {
     int8_t  x_move        = mouse_in.buf[1];
     int8_t  y_move        = mouse_in.buf[2];
 
-    kdebug("mouse_in buf: %8b %d %d\n", flags, x_move, y_move);
+    //kdebug("mouse_in buf: %8b %d %d\n", flags, x_move, y_move);
 
     //! check sync bit
     if (!sync) {
@@ -54,9 +55,9 @@ void mouse_handler(int irq) {
         return;
     }
 
-    if (x_sign) { x_move = -x_move; }
+    // if (x_sign) { x_move = -x_move; }
 
-    if (y_sign) { y_move = -y_move; }
+    // if (y_sign) { y_move = -y_move; }
 
     if (left_button) {
         mouse_status.buttons |= MOUSE_LEFT_BUTTON;
@@ -70,20 +71,25 @@ void mouse_handler(int irq) {
         mouse_status.buttons &= ~MOUSE_RIGHT_BUTTON;
     }
 
-    if (middle_button) {
-        mouse_status.buttons |= MOUSE_MIDDLE_BUTTON;
-    } else {
-        mouse_status.buttons &= ~MOUSE_MIDDLE_BUTTON;
-    }
+    // if (middle_button) {
+    //     mouse_status.buttons |= MOUSE_MIDDLE_BUTTON;
+    // } else {
+    //     mouse_status.buttons &= ~MOUSE_MIDDLE_BUTTON;
+    // }
 
     mouse_status.x += x_move * MOUSE_SPEED;
-    mouse_status.y += y_move * MOUSE_SPEED;
+    mouse_status.y -= y_move * MOUSE_SPEED;
 
     mouse_status.x = clamp(mouse_status.x, 0, DISPLAY_WIDTH);
     mouse_status.y = clamp(mouse_status.y, 0, DISPLAY_HEIGHT);
 
-    kdebug("mouse_in.x: %d, mouse_in.y: %d\n", mouse_status.x, mouse_status.y);
-    kdebug("mouse_in.buttons: %d\n", mouse_status.buttons);
+    // kdebug("mouse_in.x: %d, mouse_in.y: %d\n", mouse_status.x, mouse_status.y);
+    // kdebug("mouse_in.buttons: %d\n", mouse_status.buttons);
+
+    // must comment all kdebug out
+    // otherwise it may stuck mysteriously
+    // and the mouse will not work
+    // I have no idea why but it works
 
     mouse_in.count = 0;
     disable_int_end();
@@ -91,7 +97,25 @@ void mouse_handler(int irq) {
 
 void init_mouse() {
     mouse_in.count = 0;
+    mouse_status.x = 100;
+    mouse_status.y = 100;
+    mouse_status.buttons = 0;
 
     put_irq_handler(MOUSE_IRQ, mouse_handler);
     enable_irq(MOUSE_IRQ);
+}
+
+uint32_t do_readmouse() {
+    uint32_t x = mouse_status.x & 0x3FFF;
+    uint32_t y = mouse_status.y & 0x3FFF;
+    uint32_t buttons = mouse_status.buttons & 0b0111;
+    kdebug("readmouse: buttons=%d (raw=%d), x=%d, y=%d\n",
+           buttons, mouse_status.buttons, x, y);
+    mouse_status.buttons = 0;
+    int ret = (buttons << 28) | (x << 14) | y;
+    int y_ret = ret & 0b00000000000000000011111111111111;
+    int x_ret = (ret & 0b00001111111111111100000000000000) >> 14;
+    int button_ret = (ret & 0b11110000000000000000000000000000) >> 28;
+    kdebug("mouse_status: y=%d, x=%d, button=%d\n", y_ret, x_ret, button_ret);
+    return ret;
 }

@@ -159,6 +159,10 @@ static uint32_t sys_putframe() {
     return do_putframe(SYSCALL_ARGS3(void *, size_t, int));
 }
 
+static uint32_t sys_readmouse() {
+    return do_readmouse();
+}
+
 syscall_t syscall_table[NR_SYSCALLS] = {
     SYSCALL_ENTRY(get_ticks),
     SYSCALL_ENTRY(get_pid),
@@ -185,4 +189,5 @@ syscall_t syscall_table[NR_SYSCALLS] = {
     SYSCALL_ENTRY(killerabbit),
     SYSCALL_ENTRY(environ),
     SYSCALL_ENTRY(krnlobj_request),
-    SYSCALL_ENTRY(putframe)};
+    SYSCALL_ENTRY(putframe),
+    SYSCALL_ENTRY(readmouse)};

@@ -8,7 +8,7 @@
 #include <compositor.h>
 #include <wm.h>
 #include <malloc.h>
-
+#include <lib/mouse.h>
 
 static int window_id = 2;
 
@@ -19,6 +19,25 @@ static int isHitByCursor(int x, int y, int width, int height, int cursor_x, int 
     return 0;
 }
 
+void test_cursor(layer_ctx_t *layer_ctx, int pid){
+    int layer_index = create_layer(layer_ctx, 100, 100, 20, 20, 65535);
+    assert(layer_index != -1);
+    fill(layer_ctx, layer_index, COLOR_RED);
+    render(layer_ctx, pid);
+    while(1){
+        uint32_t mouse_status = readmouse();
+        int y = mouse_status & 0b00000000000000000011111111111111;
+        int x = (mouse_status & 0b00001111111111111100000000000000) >> 14;
+        int button = (mouse_status & 0b11110000000000000000000000000000) >> 28;
+        move(layer_ctx, layer_index, x, y);
+        if(button == 1){
+            fill(layer_ctx, layer_index, COLOR_GREEN);
+        }else if(button == 2){
+            fill(layer_ctx, layer_index, COLOR_BLUE);
+        }
+        render(layer_ctx, pid);
+    }
+}
 
 void test_layers(layer_ctx_t *layer_ctx, int pid) {
     int layer_index = create_layer(layer_ctx, 100, 100, 200, 200, 1);
@@ -172,22 +191,29 @@ void test_window(wm_ctx_t *ctx, int pid){
     // Test window switching with simulated clicks
     while(1){
         render(ctx->layer_ctx, pid);
-        sleep(200);
+        //sleep(200);
+        // uint32_t mouse_status = readmouse();
+        // int y = mouse_status & 0b00000000000000000011111111111111;
+        // int x = (mouse_status & 0b00001111111111111100000000000000) >> 14;
+        // int button = (mouse_status & 0b11110000000000000000000000000000) >> 28;
+
+        //rect(ctx->layer_ctx, w->contents[0].layer_index, 100, 100, 100, 100, mouse_status);
+        render(ctx->layer_ctx, pid);
 
         // Click on first window
         wm_updateTopWindow(ctx, 220, 120);
         render(ctx->layer_ctx, pid);
-        sleep(200);
+        //sleep(200);
 
         // Click on third window
         wm_updateTopWindow(ctx, 300, 200);
         render(ctx->layer_ctx, pid);
-        sleep(200);
+        //sleep(200);
 
         // Click on second window
         wm_updateTopWindow(ctx, 420, 320);
         render(ctx->layer_ctx, pid);
-        sleep(200);
+        //sleep(200);
 
         // Click on fourth window
         wm_updateTopWindow(ctx, 500, 400);
@@ -210,10 +236,11 @@ int main() {
 
 
     // test_layers(layer_ctx, pid);
-    test_window(wm_ctx, pid);
+    // test_window(wm_ctx, pid);
+    test_cursor(layer_ctx, pid);
     while (1) {
         render(layer_ctx, pid);
-        sleep(1000);
+        //sleep(1000);
     }
 
     unreachable();
@@ -243,6 +270,13 @@ void init_cursor(wm_ctx_t *ctx) {
     wm_window_t* w = (wm_window_t*)malloc(sizeof(wm_window_t));
     w->w_z_index = CURSOR_Z_INDEX;
     w->id = 1;
+    w->x = 100;
+    w->y = 100;
+    w->contents[0].x = 100;
+    w->contents[0].y = 100;
+    w->contents[0].width = 10;
+    w->contents[0].height = 10;
+    w->contents[0].layer_index = create_layer(ctx->layer_ctx, w->contents[0].x, w->contents[0].y, w->contents[0].width, w->contents[0].height, 10);
     ctx->bottomWindow->window = w;//bottom forever
 }
 
