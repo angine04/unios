@@ -29,8 +29,11 @@ def image_to_c_array(image_path, image_name, target_width=None, target_height=No
         for x in range(width):
             r, g, b, a = pixels[x, y]
             alpha = 255 - a
-            # 否则，使用0xrrggbb格式
-            row += f"0x{alpha:02x}{r:02x}{g:02x}{b:02x}"
+            # 如果alpha是0xff,使用0xff000000,否则使用0xaarrggbb格式
+            if alpha == 0xff:
+                row += "0xff000000"
+            else:
+                row += f"0x{alpha:02x}{r:02x}{g:02x}{b:02x}"
             if x < width - 1:
                 row += ", "
         row += "},\n"

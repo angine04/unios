@@ -352,10 +352,10 @@ void init_desktop(wm_ctx_t* ctx) {
         fill(ctx->layer_ctx, w->contents[0].layer_index, WALLPAPER_COLOR);
     }
     w->contents[1].layer_index = create_layer(
-        ctx->layer_ctx, w->contents[1].x, w->contents[1].y, 692, 32, 1);
+        ctx->layer_ctx, w->contents[1].x, w->contents[1].y, 346, 16, 1);
     clear(ctx->layer_ctx, w->contents[1].layer_index);
     use_image(
-        ctx->layer_ctx, w->contents[1].layer_index, RESOURCE_IMAGE_LETTERS, 1);
+        ctx->layer_ctx, w->contents[1].layer_index, RESOURCE_IMAGE_LETTERS, 0.5);
     w->layer_count = 2;
 }
 
