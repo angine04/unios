@@ -29,6 +29,7 @@ enum {
     NR_environ,
     NR_krnlobj_request,
     NR_putframe,
+    NR_readmouse,
     NR_exit,
 
     //! total syscalls
@@ -84,3 +85,6 @@ int do_krnlobj_request(int req, void *arg);
 
 //! from graphics.c
 int do_putframe(void *buffer, size_t size, int pid);
+
+//! from mouse.c
+uint32_t do_readmouse();

@@ -28,3 +28,15 @@ void mouse_handler(int irq);
  * \brief mouse init
  */
 void init_mouse();
+
+/*!
+ * \brief read mouse status, internally used by syscall
+ * \return mouse status
+ */
+uint32_t do_readmouse();
+
+/*!
+ * \brief read mouse status
+ * \return mouse status
+ */
+uint32_t readmouse();
