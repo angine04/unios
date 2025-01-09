@@ -115,7 +115,7 @@ void dummy_window(wm_ctx_t* ctx, int pid) {
     w->contents[0].callbackEnable = false;
     w->contents[0].bandFunction   = NULL;
     w->contents[0].belongWindow   = w;
-    ctx->layer_ctx->layers[w->contents[0].layer_index].visible = false;
+    hide(ctx->layer_ctx, w->contents[0].layer_index);
     wm_add_window(ctx, w);
 }
 

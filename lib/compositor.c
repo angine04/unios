@@ -55,7 +55,7 @@ int compositor_init(layer_ctx_t *ctx) {
 
     int background_layer_index =
         create_layer(ctx, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, 0);
-    fill(ctx, background_layer_index, COLOR_TEAL);
+    fill(ctx, background_layer_index, 0x705E56);
     int pid = get_pid();
     render(ctx, pid);
 
