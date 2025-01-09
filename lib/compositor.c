@@ -8,7 +8,11 @@
 #include <compositor.h>
 #include <malloc.h>
 #include <math.h>
-#include <icon_assets.h>
+
+#define USE_ASSETS_DATA
+
+#include <assets_data.h>
+
 static pixel_t screen_vram[DISPLAY_WIDTH * DISPLAY_HEIGHT] = {0};
 
 // Sort layers by z-index and return sorted indices
@@ -63,13 +67,13 @@ int compositor_init(layer_ctx_t *ctx) {
 }
 
 int render(layer_ctx_t *ctx, int pid) {
-    compose(ctx);
+    composite(ctx);
     putframe(
         screen_vram, DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(pixel_t), pid);
     return 0;
 }
 
-int compose(layer_ctx_t *ctx) {
+int composite(layer_ctx_t *ctx) {
     // Create array of layer indices sorted by z-index
     int sorted_count = sort_layers_by_z(ctx);
 
@@ -78,7 +82,7 @@ int compose(layer_ctx_t *ctx) {
     // Clear screen buffer
     // memset(screen_vram, 0, DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(pixel_t));
 
-    // Compose layers in z-index order
+    // composite layers in z-index order
     for (int i = 0; i < sorted_count; i++) {
         layer_t *layer = &ctx->layers[ctx->sorted_indices[i]];
         if (!layer->visible) continue;
@@ -104,7 +108,7 @@ int compose(layer_ctx_t *ctx) {
                     } else if (alpha != 0xFF) {
                         // Partially transparent - blend colors
                         float   transparency = alpha / 255.0f;
-                        pixel_t blended = blend(src_pixel, dst_pixel, transparency);
+                        pixel_t blended = blend(src_pixel, dst_pixel, 1.0f - transparency);
                         uint8_t r = (blended >> 16) & 0xFF;
                         uint8_t g = (blended >> 8) & 0xFF;
                         uint8_t b = blended & 0xFF;
@@ -255,6 +259,24 @@ pixel_t blend(pixel_t color1, pixel_t color2, float alpha) {
 
     return (r_out << 16) | (g_out << 8) | b_out;
 }
+// Blend two colors with alpha using simple blending
+pixel_t blend_simple(pixel_t color1, pixel_t color2, float alpha) {
+    // Extract RGB components
+    uint8_t r1 = (color1 >> 16) & 0xFF;
+    uint8_t g1 = (color1 >> 8) & 0xFF;
+    uint8_t b1 = color1 & 0xFF;
+
+    uint8_t r2 = (color2 >> 16) & 0xFF;
+    uint8_t g2 = (color2 >> 8) & 0xFF;
+    uint8_t b2 = color2 & 0xFF;
+
+    // Simple linear blend
+    uint8_t r = (uint8_t)(r1 * alpha + r2 * (1.0f - alpha));
+    uint8_t g = (uint8_t)(g1 * alpha + g2 * (1.0f - alpha));
+    uint8_t b = (uint8_t)(b1 * alpha + b2 * (1.0f - alpha));
+
+    return (r << 16) | (g << 8) | b;
+}
 
 int circle(
     layer_ctx_t *ctx,
@@ -362,14 +384,14 @@ int get_top_z_index(layer_ctx_t *ctx) {
     return ctx->top_z_index;
 }
 
-int use_icon_32(layer_ctx_t *ctx, int layer_index, int icon_index) {
+int use_resource(layer_ctx_t *ctx, int layer_index, int resource_index) {
     layer_t *layer = &ctx->layers[layer_index];
-    if (layer->width != 32 || layer->height != 32) {
+    if (layer->width < resources[resource_index].width || layer->height < resources[resource_index].height) {
         return -1;
     }
-    for (int y = 0; y < 32; y++) {
-        for (int x = 0; x < 32; x++) {
-            layer->buf[y * 32 + x] = icon_program[y][x];
+    for (int y = 0; y < resources[resource_index].height; y++) {
+        for (int x = 0; x < resources[resource_index].width; x++) {
+            layer->buf[y * resources[resource_index].width + x] = resources[resource_index].buf[y * resources[resource_index].width + x];
         }
     }
     return 0;

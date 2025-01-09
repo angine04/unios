@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <graphics.h>
-
+#include <assets.h>
 #define LAYER_MAX_NUM 100
 
 /*!
@@ -49,7 +49,7 @@ int render(layer_ctx_t *ctx, int pid);
  * @param ctx The compositor context
  * @return 0 on success, -1 on failure
  */
-int compose(layer_ctx_t *ctx);
+int composite(layer_ctx_t *ctx);
 
 /*!
  * @brief Create a new layer
@@ -132,6 +132,18 @@ int circle(layer_ctx_t *ctx, int layer_index, int center_x, int center_y, int ra
 pixel_t blend(pixel_t color1, pixel_t color2, float alpha);
 
 /*!
+ * @brief Blend two colors using simple blending
+ *
+ * @attention This function is not gamma-correct but it's faster than blend()
+ *
+ * @param color1 The first color
+ * @param color2 The second color
+ * @param alpha The alpha value
+ * @return The blended color
+ */
+pixel_t blend_simple(pixel_t color1, pixel_t color2, float alpha);
+
+/*!
  * @brief Draw a triangle on a layer
  * @param ctx The compositor context
  * @param layer_index The index of the layer to draw on
@@ -161,6 +173,6 @@ int top(layer_ctx_t *ctx, int layer_index);
  */
 int get_top_z_index(layer_ctx_t *ctx);
 
-int use_icon_32(layer_ctx_t *ctx, int layer_index, int icon_index);
+int use_resource(layer_ctx_t *ctx, int layer_index, int resource_index);
 
 void sort_layer(layer_ctx_t* ctx);

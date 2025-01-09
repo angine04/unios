@@ -61,7 +61,7 @@ void test_layers(layer_ctx_t* layer_ctx, int pid) {
     render(layer_ctx, pid);
     int icon_layer_index = create_layer(layer_ctx, 300, 300, 32, 32, 3);
     assert(icon_layer_index != -1);
-    use_icon_32(layer_ctx, icon_layer_index, 0);
+    use_resource(layer_ctx, icon_layer_index, 0);
     render(layer_ctx, pid);
 
     while (1) {
@@ -169,25 +169,14 @@ void test_window(wm_ctx_t *ctx, int pid){
         w2->contents[0].height,
         30);
     fill(ctx->layer_ctx, w2->contents[0].layer_index, COLOR_PURPLE);
-    rect(
-        ctx->layer_ctx,
-        w2->contents[0].layer_index,
-        10,
-        10,
-        130,
-        130,
-        COLOR_BLUE);
-    circle(
-        ctx->layer_ctx, w2->contents[0].layer_index, 75, 75, 50,
-        COLOR_GREEN);
     w2->contents[0].callbackEnable = false;
     w2->contents[0].bandFunction   = NULL;
     w2->contents[0].belongWindow   = w2;
 
     w2->contents[1].x           = 50;
     w2->contents[1].y           = 50;
-    w2->contents[1].width       = 32;
-    w2->contents[1].height      = 32;
+    w2->contents[1].width       = 64;
+    w2->contents[1].height      = 64;
     w2->contents[1].z_index     = 40;
     w2->contents[1].layer_index = create_layer(
         ctx->layer_ctx,
@@ -196,7 +185,7 @@ void test_window(wm_ctx_t *ctx, int pid){
         w2->contents[1].width,
         w2->contents[1].height,
         40);
-    use_icon_32(ctx->layer_ctx, w2->contents[1].layer_index, 0);
+    use_resource(ctx->layer_ctx, w2->contents[1].layer_index, RESOURCE_ICON_UNIOS);
     w2->contents[1].callbackEnable = false;
     w2->contents[1].bandFunction   = NULL;
     w2->contents[1].belongWindow   = w2;
@@ -293,7 +282,7 @@ int main() {
     init_cursor(wm_ctx);
 
     // test_layers(layer_ctx, pid);
-    test_window(wm_ctx, pid);
+    // test_window(wm_ctx, pid);
     // test_cursor(layer_ctx, pid);
     while (1) {
         mouse_t mouse = get_mouse_status();

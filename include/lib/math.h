@@ -80,3 +80,11 @@ float powf(float base, float exp);
  * @return The exponential of x
  */
 float expf(float x);
+
+/*!
+ * @brief Calculate the floor of a float
+ *
+ * @param x The number to calculate the floor of
+ * @return The floor of x
+ */
+float floorf(float x);
