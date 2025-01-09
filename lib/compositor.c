@@ -56,7 +56,7 @@ int compositor_init(layer_ctx_t *ctx) {
 
     int background_layer_index =
         create_layer(ctx, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, 0);
-    fill(ctx, background_layer_index, 0x705E56);
+    fill(ctx, background_layer_index, COLOR_TEAL);
     int pid = get_pid();
     render(ctx, pid);
 
@@ -266,6 +266,12 @@ pixel_t blend(pixel_t color1, pixel_t color2, float alpha) {
     uint8_t b_out = (uint8_t)(powf(b, 1.0f / 2.2f) * 255.0f);
     uint8_t a_out = (uint8_t)((1.0f - final_alpha) * 255.0f);
 
+    if(a1 == 0xff){
+        return (a_out << 24) | color2;
+    }
+    if(a2 == 0xff){
+        return (a_out << 24) | color1;
+    }
     return (a_out << 24) | (r_out << 16) | (g_out << 8) | b_out;
 }
 
@@ -468,8 +474,8 @@ int rounded_rect(
     circle(ctx, layer_index, x + width - radius, y + radius, radius, color);
     circle(ctx, layer_index, x + radius, y + height - radius, radius, color);
     circle(ctx, layer_index, x + width - radius, y + height - radius, radius, color);
-    rect(ctx, layer_index, x + radius, 0, width - radius * 2, radius, color);
+    rect(ctx, layer_index, x + radius, 1, width - radius * 2, radius, color);
     rect(ctx, layer_index, x + radius, height - radius, width - radius * 2, radius, color);
-    rect(ctx, layer_index, x, y + radius, width, height - radius * 2, color);
+    rect(ctx, layer_index, x + 1 , y + radius, width, height - radius * 2, color);
     return 0;
 }

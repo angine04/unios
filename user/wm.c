@@ -196,8 +196,8 @@ void test_window(wm_ctx_t* ctx, int pid) {
 
     w2->contents[1].x           = 50;
     w2->contents[1].y           = 50;
-    w2->contents[1].width       = 32;
-    w2->contents[1].height      = 32;
+    w2->contents[1].width       = 64;
+    w2->contents[1].height      = 64;
     w2->contents[1].z_index     = 40;
     w2->contents[1].layer_index = create_layer(
         ctx->layer_ctx,
@@ -206,7 +206,7 @@ void test_window(wm_ctx_t* ctx, int pid) {
         w2->contents[1].width,
         w2->contents[1].height,
         40);
-    use_icon_32(ctx->layer_ctx, w2->contents[1].layer_index, 0);
+    use_resource(ctx->layer_ctx, w2->contents[1].layer_index, RESOURCE_ICON_UNIOS, 1);
     w2->contents[1].callbackEnable = false;
     w2->contents[1].bandFunction   = NULL;
     w2->contents[1].belongWindow   = w2;
@@ -275,7 +275,7 @@ int main() {
     init_desktop(wm_ctx);
     init_cursor(wm_ctx);
 
-    //dummy_window(wm_ctx, pid);
+    // dummy_window(wm_ctx, pid);
     // test_layers(layer_ctx, pid);
     test_window(wm_ctx, pid);
     // test_gui(wm_ctx, pid);
@@ -547,8 +547,9 @@ wm_window_t* ui_create_widget(int x, int y, int width, int height){
         w->contents[0].height = height;
         w->contents[0].z_index = 10;
         w->contents[0].layer_index = create_layer(layer_ctx, w->contents[0].x, w->contents[0].y, w->contents[0].width, w->contents[0].height, 10);
-        fill(layer_ctx, w->contents[0].layer_index, COLOR_SILVER);
-        rect(layer_ctx, w->contents[0].layer_index, 0, 40, width, height - 40, COLOR_LIGHTGREY);
+        clear(layer_ctx, w->contents[0].layer_index);
+        rounded_rect(layer_ctx, w->contents[0].layer_index, 0, 0, width, height, 12, 0x383838);
+        // rounded_rect(layer_ctx, w->contents[0].layer_index, 0, 0, width, 32, 16, 0x383838);
         w->contents[0].bandFunction = NULL;
         w->contents[0].belongWindow = w;
         w->contents[0].callbackEnable = false;
@@ -556,37 +557,40 @@ wm_window_t* ui_create_widget(int x, int y, int width, int height){
         /*****title******** */
 
         /*****button******** */
-        w->contents[1].x = width - 30;
-        w->contents[1].y = 10;
-        w->contents[1].width = 20;
-        w->contents[1].height = 20;
+        w->contents[1].x = width - 18;
+        w->contents[1].y = 6;
+        w->contents[1].width = 12;
+        w->contents[1].height = 12;
         w->contents[1].z_index = 20;
         w->contents[1].layer_index = create_layer(layer_ctx, w->contents[1].x, w->contents[1].y, w->contents[1].width, w->contents[1].height, 20);
-        circle(layer_ctx, w->contents[1].layer_index, 10, 10, 10, COLOR_RED);
+        clear(layer_ctx, w->contents[1].layer_index);
+        circle(layer_ctx, w->contents[1].layer_index, 6, 6, 6, 0xED6A5E);
         w->contents[1].bandFunction = ui_close;
         w->contents[1].belongWindow = w;
         w->contents[1].callbackEnable = true;
         w->contents[1].dynamicSize = false;
 
-        w->contents[2].x = width - 60;
-        w->contents[2].y = 10;
-        w->contents[2].width = 20;
-        w->contents[2].height = 20;
+        w->contents[2].x = width - 36;
+        w->contents[2].y = 6;
+        w->contents[2].width = 12;
+        w->contents[2].height = 12;
         w->contents[2].z_index = 21;
         w->contents[2].layer_index = create_layer(layer_ctx, w->contents[2].x, w->contents[2].y, w->contents[2].width, w->contents[2].height, 21);
-        circle(layer_ctx, w->contents[2].layer_index, 10, 10, 10, COLOR_YELLOW);
+        clear(layer_ctx, w->contents[2].layer_index);
+        circle(layer_ctx, w->contents[2].layer_index, 6, 6, 6, 0xF4BF50);
         w->contents[2].bandFunction = ui_hide;
         w->contents[2].belongWindow = w;
         w->contents[2].callbackEnable = true;
         w->contents[2].dynamicSize = false;
 
-        w->contents[3].x = width - 90;
-        w->contents[3].y = 10;
-        w->contents[3].width = 20;
-        w->contents[3].height = 20;
+        w->contents[3].x = width - 54;
+        w->contents[3].y = 6;
+        w->contents[3].width = 12;
+        w->contents[3].height = 12;
         w->contents[3].z_index = 22;
         w->contents[3].layer_index = create_layer(layer_ctx, w->contents[3].x, w->contents[3].y, w->contents[3].width, w->contents[3].height, 22);
-        circle(layer_ctx, w->contents[3].layer_index, 10, 10, 10, COLOR_GREEN);
+        clear(layer_ctx, w->contents[3].layer_index);
+        circle(layer_ctx, w->contents[3].layer_index, 6, 6, 6, 0x61C555);
         w->contents[3].bandFunction = ui_full_screen;
         w->contents[3].belongWindow = w;
         w->contents[3].callbackEnable = true;
