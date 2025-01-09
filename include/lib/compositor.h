@@ -242,3 +242,17 @@ int show(layer_ctx_t *ctx, int layer_index);
  * @return 0 on success, -1 on failure
  */
 int hide(layer_ctx_t *ctx, int layer_index);
+
+/*!
+ * @brief Draw a rounded rectangle on a layer
+ * @param ctx The compositor context
+ * @param layer_index The index of the layer
+ * @param x The x position of the rectangle
+ * @param y The y position of the rectangle
+ * @param width The width of the rectangle
+ * @param height The height of the rectangle
+ * @param radius The radius of the rectangle corners
+ * @param color The color of the rectangle
+ * @return 0 on success, -1 on failure
+ */
+int rounded_rect(layer_ctx_t *ctx, int layer_index, int x, int y, int width, int height, int radius, pixel_t color);
