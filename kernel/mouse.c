@@ -109,13 +109,17 @@ uint32_t do_readmouse() {
     uint32_t x = mouse_status.x & 0x3FFF;
     uint32_t y = mouse_status.y & 0x3FFF;
     uint32_t buttons = mouse_status.buttons & 0b0111;
-    kdebug("readmouse: buttons=%d (raw=%d), x=%d, y=%d\n",
-           buttons, mouse_status.buttons, x, y);
     mouse_status.buttons = 0;
+
+    //NOTE: mouse message format:
+    // 31-28: button, 4 bits
+    // 27-14: x, 14 bits
+    // 13-0: y, 14 bits
+
     int ret = (buttons << 28) | (x << 14) | y;
-    int y_ret = ret & 0b00000000000000000011111111111111;
-    int x_ret = (ret & 0b00001111111111111100000000000000) >> 14;
-    int button_ret = (ret & 0b11110000000000000000000000000000) >> 28;
-    kdebug("mouse_status: y=%d, x=%d, button=%d\n", y_ret, x_ret, button_ret);
+    int y_ret = ret & 0x3FFF;
+    int x_ret = (ret & 0x3FFF0000) >> 14;
+    int button_ret = (ret & 0xF0000000) >> 28;
+    //kdebug("readmouse: y=%d, x=%d, button=%d\n", y_ret, x_ret, button_ret);
     return ret;
 }
