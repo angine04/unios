@@ -4,7 +4,17 @@
 #define DESKTOP_Z_INDEX 1
 
 
-typedef struct wm_content_t{
+// Forward declarations to handle circular dependencies
+struct wm_window_t;
+struct wm_content_t;
+struct wm_windowNode;
+
+// Forward declare content struct
+typedef struct wm_content_t wm_content_t;
+typedef struct wm_window_t wm_window_t;
+typedef struct wm_windowNode wm_windowNode;
+
+struct wm_content_t {
     int x;
     int y;
     int width;
@@ -12,29 +22,32 @@ typedef struct wm_content_t{
     int z_index;
     int layer_index;
     bool callbackEnable;
-    void (*bandFunction)(void);
-    struct wm_window_t* belongWindow;
+    void (*bandFunction)(wm_window_t*);
+    wm_window_t* belongWindow;
     bool dynamicSize;
-} wm_content_t;//窗口带有的组件，x,y以窗口左上角位置为原点
+};//窗口带有的组件，x,y以窗口左上角位置为原点
 
-typedef struct wm_windowNode {
-    struct wm_windowNode* pre_wmN;
-    struct wm_windowNode* next_wmN;
-    struct wm_window_t* window;
-}wm_windowNode;
 
-typedef struct wm_window_t{
+struct wm_window_t {
     int id;
     int pid;
     int x;
     int y;
     int width;
     int height;
-    struct wm_content_t contents[MAX_CONTENTS];
+    wm_content_t contents[MAX_CONTENTS];
     int layer_count;
     int w_z_index;
     int button_count;
-} wm_window_t;//窗口，x,y表示窗口左上角位置
+};//窗口，x,y表示窗口左上角位置
+
+
+
+struct wm_windowNode {
+    wm_windowNode* pre_wmN;
+    wm_windowNode* next_wmN;
+    wm_window_t* window;
+};
 
 
 typedef struct wm_ctx_t{
@@ -102,7 +115,7 @@ void wm_resizeWindows(wm_window_t* window, int newWidth, int newHeight);
 
 layer_ctx_t* get_layer_ctx(wm_ctx_t* ctx);
 
-wm_window_t* get_window_ctx(wm_ctx_t* ctx);
+wm_window_t* get_window_ctx();
 
 
 
@@ -117,7 +130,7 @@ wm_window_t* get_window_ctx(wm_ctx_t* ctx);
 #define MIN_WIDGET_WIDTH 10
 #define MIN_WIDGET_HEIGHT 10
 
-void GUI_init();
+void GUI_init(wm_ctx_t* ctx);
 /*************基础控件****************** */
 /*!
  * @brief Create a window to the window manager.
@@ -128,7 +141,7 @@ void GUI_init();
  * @param window The window return to user
  * @return is success
  */
-int ui_create_widget(int x, int y, int width, int height, wm_window_t* window);
+wm_window_t* ui_create_widget(int x, int y, int width, int height);
 /*!
  * @brief Create a button to the window manager.
  * @param x The x position (accrording to window) of the button
@@ -141,7 +154,7 @@ int ui_create_widget(int x, int y, int width, int height, wm_window_t* window);
  * @param window The window to add the button
  * @return button id
  */
-int ui_create_button(int x, int y, int width, int height, int z_index, char *text, void (*callback)(void*), wm_window_t* window);
+int ui_create_button(int x, int y, int width, int height, int z_index, char *text, void (*callback)(wm_window_t*), wm_window_t* window);
 /*!
  * @brief Create a label to the window manager.
  * @param x The x position (accrording to window) of the label
