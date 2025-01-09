@@ -27,10 +27,10 @@ void test_cursor(layer_ctx_t* layer_ctx, int pid) {
     fill(layer_ctx, layer_index, COLOR_RED);
     render(layer_ctx, pid);
     while (1) {
-        mouse_t mouse = get_mouse_status();
-        int x = mouse.x;
-        int y = mouse.y;
-        int button = mouse.buttons;
+        mouse_t mouse  = get_mouse_status();
+        int     x      = mouse.x;
+        int     y      = mouse.y;
+        int     button = mouse.buttons;
         move(layer_ctx, layer_index, x, y);
         if (button == 1) {
             fill(layer_ctx, layer_index, COLOR_GREEN);
@@ -156,10 +156,10 @@ void test_window(wm_ctx_t *ctx, int pid){
     w2->y                       = 300;
     w2->width                   = 300;
     w2->height                  = 250;
-    w2->contents[0].x           = 15;
-    w2->contents[0].y           = 15;
-    w2->contents[0].width       = 150;
-    w2->contents[0].height      = 150;
+    w2->contents[0].x           = 0;
+    w2->contents[0].y           = 0;
+    w2->contents[0].width       = 300;
+    w2->contents[0].height      = 250;
     w2->contents[0].z_index     = 30;
     w2->contents[0].layer_index = create_layer(
         ctx->layer_ctx,
@@ -178,17 +178,24 @@ void test_window(wm_ctx_t *ctx, int pid){
         130,
         COLOR_BLUE);
     circle(
-        ctx->layer_ctx, w2->contents[0].layer_index, 75, 75, 50, COLOR_GREEN);
+        ctx->layer_ctx, w2->contents[0].layer_index, 75, 75, 50,
+        COLOR_GREEN);
     w2->contents[0].callbackEnable = false;
     w2->contents[0].bandFunction   = NULL;
     w2->contents[0].belongWindow   = w2;
 
-    w2->contents[1].x = 50;
-    w2->contents[1].y = 50;
-    w2->contents[1].width = 32;
-    w2->contents[1].height = 32;
-    w2->contents[1].z_index = 40;
-    w2->contents[1].layer_index = create_layer(ctx->layer_ctx, w2->contents[1].x, w2->contents[1].y, w2->contents[1].width, w2->contents[1].height, 40);
+    w2->contents[1].x           = 50;
+    w2->contents[1].y           = 50;
+    w2->contents[1].width       = 32;
+    w2->contents[1].height      = 32;
+    w2->contents[1].z_index     = 40;
+    w2->contents[1].layer_index = create_layer(
+        ctx->layer_ctx,
+        w2->contents[1].x,
+        w2->contents[1].y,
+        w2->contents[1].width,
+        w2->contents[1].height,
+        40);
     use_icon_32(ctx->layer_ctx, w2->contents[1].layer_index, 0);
     w2->contents[1].callbackEnable = false;
     w2->contents[1].bandFunction   = NULL;
@@ -210,10 +217,10 @@ void test_window(wm_ctx_t *ctx, int pid){
     w3->y                       = 250;
     w3->width                   = 200;
     w3->height                  = 200;
-    w3->contents[0].x           = 10;
-    w3->contents[0].y           = 10;
-    w3->contents[0].width       = 180;
-    w3->contents[0].height      = 180;
+    w3->contents[0].x           = 0;
+    w3->contents[0].y           = 0;
+    w3->contents[0].width       = 200;
+    w3->contents[0].height      = 200;
     w3->contents[0].z_index     = 50;
     w3->contents[0].layer_index = create_layer(
         ctx->layer_ctx,
@@ -224,7 +231,8 @@ void test_window(wm_ctx_t *ctx, int pid){
         50);
     fill(ctx->layer_ctx, w3->contents[0].layer_index, COLOR_YELLOW);
     rect(
-        ctx->layer_ctx, w3->contents[0].layer_index, 5, 5, 170, 170, COLOR_RED);
+        ctx->layer_ctx, w3->contents[0].layer_index, 5, 5, 170, 170,
+        COLOR_RED);
     w3->contents[0].callbackEnable = false;
     w3->contents[0].bandFunction   = NULL;
     w3->contents[0].belongWindow   = w3;
@@ -285,6 +293,8 @@ int main() {
     init_cursor(wm_ctx);
 
     // test_layers(layer_ctx, pid);
+    test_window(wm_ctx, pid);
+    // test_cursor(layer_ctx, pid);
     test_window(wm_ctx, pid);
     // test_cursor(layer_ctx, pid);
     while (1) {

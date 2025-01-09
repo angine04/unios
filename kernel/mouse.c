@@ -61,6 +61,7 @@ void mouse_handler(int irq) {
 
     if (left_button) {
         mouse_status.buttons |= MOUSE_LEFT_BUTTON;
+        kdebug("left click\n");
     } else {
         mouse_status.buttons &= ~MOUSE_LEFT_BUTTON;
     }
@@ -112,14 +113,12 @@ uint32_t do_readmouse() {
     mouse_status.buttons = 0;
 
     //NOTE: mouse message format:
-    // 31-28: button, 4 bits
+    // 31: valid when 0, 1 bit
+    // 30-28: button, 3 bits
     // 27-14: x, 14 bits
     // 13-0: y, 14 bits
 
     int ret = (buttons << 28) | (x << 14) | y;
-    int y_ret = ret & 0x3FFF;
-    int x_ret = (ret & 0x3FFF0000) >> 14;
-    int button_ret = (ret & 0xF0000000) >> 28;
-    //kdebug("readmouse: y=%d, x=%d, button=%d\n", y_ret, x_ret, button_ret);
+    kdebug("readmouse: %32b\n", ret);
     return ret;
 }
