@@ -146,14 +146,7 @@ int main() {
         while (!mouse_event_empty()) {
             mouse_event_t event = pop_mouse_event();
             if (event.event == MOUSE_LEFT_DOWN) {
-                fill(layer_ctx, cursor_layer_index, COLOR_GREEN);
                 wm_updateTopWindow(wm_ctx, mouse.x, mouse.y);
-            }
-            if (event.event == MOUSE_RIGHT_DOWN) {
-                fill(layer_ctx, cursor_layer_index, COLOR_RED);
-            }
-            if (event.event == MOUSE_LEFT_UP || event.event == MOUSE_RIGHT_UP) {
-                fill(layer_ctx, cursor_layer_index, COLOR_BLACK);
             }
         }
         render(layer_ctx, pid);
@@ -211,8 +204,8 @@ void init_cursor(wm_ctx_t* ctx) {
     w->y                       = 1;
     w->contents[0].x           = 1;
     w->contents[0].y           = 1;
-    w->contents[0].width       = 10;
-    w->contents[0].height      = 10;
+    w->contents[0].width       = 15;
+    w->contents[0].height      = 24;
     w->contents[0].layer_index = create_layer(
         ctx->layer_ctx,
         w->contents[0].x,
@@ -222,7 +215,7 @@ void init_cursor(wm_ctx_t* ctx) {
         65535);
     ctx->topWindow->window = w; // top forever
     int cursor_layer_index = w->contents[0].layer_index;
-    fill(ctx->layer_ctx, cursor_layer_index, COLOR_BLACK);
+    use_resource(ctx->layer_ctx, cursor_layer_index, RESOURCE_ICON_CURSOR, 1);
 }
 
 int wm_add_window(wm_ctx_t* ctx, wm_window_t* window) {
