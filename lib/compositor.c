@@ -237,14 +237,6 @@ float distance(int x1, int y1, int x2, int y2) {
 
 // Blend two colors in gamma-correct linear space with alpha
 pixel_t blend(pixel_t color1, pixel_t color2, float alpha) {
-    // Extract alpha values (0x00 = opaque, 0xff = transparent)
-    uint8_t a1 = (color1 >> 24) & 0xFF;
-    uint8_t a2 = (color2 >> 24) & 0xFF;
-
-    // Convert alpha from 0-255 to 0.0-1.0 and invert (1.0 = opaque, 0.0 = transparent)
-    float alpha1 = (255.0f - a1) / 255.0f;
-    float alpha2 = (255.0f - a2) / 255.0f;
-
     // Convert to linear space
     float r1 = powf(((color1 >> 16) & 0xFF) / 255.0f, 2.2f);
     float g1 = powf(((color1 >> 8) & 0xFF) / 255.0f, 2.2f);
@@ -254,25 +246,17 @@ pixel_t blend(pixel_t color1, pixel_t color2, float alpha) {
     float g2 = powf(((color2 >> 8) & 0xFF) / 255.0f, 2.2f);
     float b2 = powf((color2 & 0xFF) / 255.0f, 2.2f);
 
-    // Blend in linear space considering alpha
-    float final_alpha = alpha1 * alpha + alpha2 * (1.0f - alpha);
-    float r = (r1 * alpha1 * alpha + r2 * alpha2 * (1.0f - alpha)) / final_alpha;
-    float g = (g1 * alpha1 * alpha + g2 * alpha2 * (1.0f - alpha)) / final_alpha;
-    float b = (b1 * alpha1 * alpha + g2 * alpha2 * (1.0f - alpha)) / final_alpha;
+    // Blend in linear space
+    float r = r1 * alpha + r2 * (1.0f - alpha);
+    float g = g1 * alpha + g2 * (1.0f - alpha);
+    float b = b1 * alpha + b2 * (1.0f - alpha);
 
     // Convert back to sRGB space
     uint8_t r_out = (uint8_t)(powf(r, 1.0f / 2.2f) * 255.0f);
     uint8_t g_out = (uint8_t)(powf(g, 1.0f / 2.2f) * 255.0f);
     uint8_t b_out = (uint8_t)(powf(b, 1.0f / 2.2f) * 255.0f);
-    uint8_t a_out = (uint8_t)((1.0f - final_alpha) * 255.0f);
 
-    if(a1 == 0xff){
-        return (a_out << 24) | color2;
-    }
-    if(a2 == 0xff){
-        return (a_out << 24) | color1;
-    }
-    return (a_out << 24) | (r_out << 16) | (g_out << 8) | b_out;
+    return (r_out << 16) | (g_out << 8) | b_out;
 }
 
 // Blend two colors with alpha using simple blending
@@ -309,9 +293,14 @@ int circle(
                 // Calculate alpha based on distance from edge
                 float alpha = 1.0f;
                 if (dist > radius - 1.0f) { alpha = radius - dist; }
-
-                layer->buf[y * layer->width + x] =
-                    blend(color, layer->buf[y * layer->width + x], alpha);
+                if (layer->buf[y * layer->width + x] & 0xff000000 == 0xff000000){
+                    int transparency = (int)(255 - alpha * 255) & 0xff;
+                    layer->buf[y * layer->width + x] = color | (transparency << 24);
+                }
+                else{
+                    layer->buf[y * layer->width + x] =
+                        blend(color, layer->buf[y * layer->width + x], alpha);
+                }
             }
         }
     }
@@ -400,27 +389,27 @@ int get_top_z_index(layer_ctx_t *ctx) {
     return ctx->top_z_index;
 }
 
-int use_resource(
-    layer_ctx_t *ctx, int layer_index, int resource_index, int stretch) {
+int use_image(
+    layer_ctx_t *ctx, int layer_index, int image_index, int scale) {
     layer_t *layer = &ctx->layers[layer_index];
-    if (layer->width < resources[resource_index].width
-        || layer->height < resources[resource_index].height) {
+    if (layer->width < images[image_index].width
+        || layer->height < images[image_index].height) {
         return -1;
     }
-    for (int y = 0; y < resources[resource_index].height; y++) {
-        for (int x = 0; x < resources[resource_index].width; x++) {
-            int offset = y * resources[resource_index].width + x;
-            if (stretch >= 2) {
+    for (int y = 0; y < images[image_index].height; y++) {
+        for (int x = 0; x < images[image_index].width; x++) {
+            int offset = y * images[image_index].width + x;
+            if (scale >= 2) {
                 rect(
                     ctx,
                     layer_index,
-                    x * stretch,
-                    y * stretch,
-                    stretch,
-                    stretch,
-                    resources[resource_index].buf[offset]);
+                    x * scale,
+                    y * scale,
+                    scale,
+                    scale,
+                    images[image_index].buf[offset]);
             } else {
-                layer->buf[offset] = resources[resource_index].buf[offset];
+                layer->buf[offset] = images[image_index].buf[offset];
             }
         }
     }
@@ -474,8 +463,8 @@ int rounded_rect(
     circle(ctx, layer_index, x + width - radius, y + radius, radius, color);
     circle(ctx, layer_index, x + radius, y + height - radius, radius, color);
     circle(ctx, layer_index, x + width - radius, y + height - radius, radius, color);
-    rect(ctx, layer_index, x + radius, 1, width - radius * 2, radius, color);
-    rect(ctx, layer_index, x + radius, height - radius, width - radius * 2, radius, color);
-    rect(ctx, layer_index, x + 1 , y + radius, width, height - radius * 2, color);
+    rect(ctx, layer_index, x + radius, y + 1, width - radius * 2, radius, color);
+    rect(ctx, layer_index, x + radius, y + height - radius, width - radius * 2, radius, color);
+    rect(ctx, layer_index, x + 1, y + radius, width - 1, height - radius * 2, color);
     return 0;
 }

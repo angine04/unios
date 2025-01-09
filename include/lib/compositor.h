@@ -191,14 +191,14 @@ int top(layer_ctx_t *ctx, int layer_index);
 int get_top_z_index(layer_ctx_t *ctx);
 
 /*!
- * @brief Use a resource
+ * @brief Use a image
  * @param ctx The compositor context
  * @param layer_index The index of the layer
- * @param resource_index The index of the resource
+ * @param image_index The index of the image
  * @param stretch The stretch factor
  * @return 0 on success, -1 on failure
  */
-int use_resource(layer_ctx_t *ctx, int layer_index, int resource_index, int stretch);
+int use_image(layer_ctx_t *ctx, int layer_index, int image_index, int stretch);
 
 /*!
  * @brief Sort the layers by z index
