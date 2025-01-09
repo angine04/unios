@@ -205,3 +205,40 @@ int use_resource(layer_ctx_t *ctx, int layer_index, int resource_index, int stre
  * @param ctx The compositor context
  */
 void sort_layer(layer_ctx_t *ctx);
+
+/*!
+ * @brief Resize a layer to a new size
+ *
+ * @attention This function clears the layer buffer.
+ *
+ * @param ctx The compositor context
+ * @param layer_index The index of the layer
+ * @param width The new width
+ * @param height The new height
+ * @return 0 on success, -1 on failure
+ */
+int resize(layer_ctx_t *ctx, int layer_index, int width, int height);
+
+/*!
+ * @brief Clear a layer
+ * @param ctx The compositor context
+ * @param layer_index The index of the layer
+ * @return 0 on success, -1 on failure
+ */
+int clear(layer_ctx_t *ctx, int layer_index);
+
+/*!
+ * @brief Show a layer
+ * @param ctx The compositor context
+ * @param layer_index The index of the layer
+ * @return 0 on success, -1 on failure
+ */
+int show(layer_ctx_t *ctx, int layer_index);
+
+/*!
+ * @brief Hide a layer
+ * @param ctx The compositor context
+ * @param layer_index The index of the layer
+ * @return 0 on success, -1 on failure
+ */
+int hide(layer_ctx_t *ctx, int layer_index);

@@ -392,6 +392,7 @@ int use_resource(
     }
     for (int y = 0; y < resources[resource_index].height; y++) {
         for (int x = 0; x < resources[resource_index].width; x++) {
+            int offset = y * resources[resource_index].width + x;
             if (stretch >= 2) {
                 rect(
                     ctx,
@@ -400,12 +401,9 @@ int use_resource(
                     y * stretch,
                     stretch,
                     stretch,
-                    resources[resource_index]
-                        .buf[y * resources[resource_index].width + x]);
+                    resources[resource_index].buf[offset]);
             } else {
-                layer->buf[y * resources[resource_index].width + x] =
-                    resources[resource_index]
-                        .buf[y * resources[resource_index].width + x];
+                layer->buf[offset] = resources[resource_index].buf[offset];
             }
         }
     }
@@ -414,4 +412,33 @@ int use_resource(
 
 void sort_layer(layer_ctx_t *ctx) {
     sort_layers_by_z(ctx);
+}
+
+int resize(layer_ctx_t *ctx, int layer_index, int width, int height) {
+    layer_t *layer = &ctx->layers[layer_index];
+    pixel_t *old_buf = layer->buf;
+    layer->buf = malloc(width * height * 4);
+    if (!layer->buf) {
+        return -1;
+    }
+    layer->width = width;
+    layer->height = height;
+    memset(layer->buf, 0, width * height * 4);
+    free(old_buf);
+    return 0;
+}
+
+int clear(layer_ctx_t *ctx, int layer_index) {
+    fill(ctx, layer_index, COLOR_TRANSPARENT);
+    return 0;
+}
+
+int show(layer_ctx_t *ctx, int layer_index) {
+    ctx->layers[layer_index].visible = true;
+    return 0;
+}
+
+int hide(layer_ctx_t *ctx, int layer_index) {
+    ctx->layers[layer_index].visible = false;
+    return 0;
 }
