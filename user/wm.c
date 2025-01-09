@@ -365,7 +365,7 @@ void init_cursor(wm_ctx_t* ctx) {
     fill(ctx->layer_ctx, cursor_layer_index, COLOR_BLACK);
 }
 
-int wm_add_window(wm_ctx_t* ctx, wm_window_t* window) {
+layer_ctx_t* wm_add_window(wm_ctx_t* ctx, wm_window_t* window) {
     // 新增窗口为之前顶层用户窗口 w z index + 1
     if (ctx->window_count == 2) {
         window->w_z_index = DESKTOP_Z_INDEX + 1;
@@ -407,7 +407,7 @@ int wm_add_window(wm_ctx_t* ctx, wm_window_t* window) {
         }
     }
     sort_layer(ctx->layer_ctx);
-    return 0;
+    return ctx->layer_ctx;
 }
 
 int wm_remove_window(wm_ctx_t* ctx, int window_id) {}
@@ -500,3 +500,11 @@ void wm_updateTopWindow(wm_ctx_t *ctx, int cursor_x, int cursor_y){
 }
 
 void wm_resizeWindows(wm_window_t* window, int newWidth, int newHeight) {}
+
+layer_ctx_t* get_layer_ctx(wm_ctx_t* ctx){
+    return ctx->layer_ctx;
+}
+
+wm_window_t* get_window_ctx(wm_ctx_t* ctx){
+    return ctx->topWindow->window;
+}

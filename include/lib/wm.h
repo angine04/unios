@@ -13,6 +13,7 @@ typedef struct wm_content_t{
     bool callbackEnable;
     void (*bandFunction)(void);
     struct wm_window_t* belongWindow;
+    bool dynamicSize;
 } wm_content_t;//窗口带有的组件，x,y以窗口左上角位置为原点
 
 typedef struct wm_windowNode {
@@ -96,3 +97,7 @@ void wm_updateTopWindow(wm_ctx_t *ctx, int cursor_x, int cursor_y);
  * @brief Resize the Top USER window and components that belong it
  */
 void wm_resizeWindows(wm_window_t* window, int newWidth, int newHeight);
+
+layer_ctx_t* get_layer_ctx(wm_ctx_t* ctx);
+
+wm_window_t* get_window_ctx(wm_ctx_t* ctx);
