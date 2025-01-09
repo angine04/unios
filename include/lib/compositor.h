@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <graphics.h>
-
+#include <assets.h>
 #define LAYER_MAX_NUM 100
 
 /*!
@@ -16,7 +16,7 @@ typedef struct {
     int      height;
     pixel_t *buf;
     int      z_index;
-    float    opacity;
+    bool     use_alpha;
 } layer_t;
 
 /*!
@@ -49,7 +49,7 @@ int render(layer_ctx_t *ctx, int pid);
  * @param ctx The compositor context
  * @return 0 on success, -1 on failure
  */
-int compose(layer_ctx_t *ctx);
+int composite(layer_ctx_t *ctx);
 
 /*!
  * @brief Create a new layer
@@ -63,12 +63,7 @@ int compose(layer_ctx_t *ctx);
  * @return index of the layer, -1 on failure
  */
 int create_layer(
-    layer_ctx_t *ctx,
-    int          pos_x,
-    int          pos_y,
-    int          width,
-    int          height,
-    int          z_index);
+    layer_ctx_t *ctx, int pos_x, int pos_y, int width, int height, int z_index);
 
 /*!
  * @brief Release a layer
@@ -98,7 +93,14 @@ int fill(layer_ctx_t *ctx, int layer_index, pixel_t color);
  * @param color The color of the rectangle
  * @return 0 on success, -1 on failure
  */
-int rect(layer_ctx_t *ctx, int layer_index, int x, int y, int width, int height, pixel_t color);
+int rect(
+    layer_ctx_t *ctx,
+    int          layer_index,
+    int          x,
+    int          y,
+    int          width,
+    int          height,
+    pixel_t      color);
 
 /*!
  * @brief Move a layer
@@ -120,7 +122,13 @@ int move(layer_ctx_t *ctx, int layer_index, int x, int y);
  * @param color The color of the circle
  * @return 0 on success, -1 on failure
  */
-int circle(layer_ctx_t *ctx, int layer_index, int center_x, int center_y, int radius, pixel_t color);
+int circle(
+    layer_ctx_t *ctx,
+    int          layer_index,
+    int          center_x,
+    int          center_y,
+    int          radius,
+    pixel_t      color);
 
 /*!
  * @brief Blend two colors in gamma-correct linear space with alpha
@@ -130,6 +138,18 @@ int circle(layer_ctx_t *ctx, int layer_index, int center_x, int center_y, int ra
  * @return The blended color
  */
 pixel_t blend(pixel_t color1, pixel_t color2, float alpha);
+
+/*!
+ * @brief Blend two colors using simple blending
+ *
+ * @attention This function is not gamma-correct but it's faster than blend()
+ *
+ * @param color1 The first color
+ * @param color2 The second color
+ * @param alpha The alpha value
+ * @return The blended color
+ */
+pixel_t blend_simple(pixel_t color1, pixel_t color2, float alpha);
 
 /*!
  * @brief Draw a triangle on a layer
@@ -144,7 +164,16 @@ pixel_t blend(pixel_t color1, pixel_t color2, float alpha);
  * @param color The color of the triangle
  * @return 0 on success, -1 on failure
  */
-int triangle(layer_ctx_t *ctx, int layer_index, int x1, int y1, int x2, int y2, int x3, int y3, pixel_t color);
+int triangle(
+    layer_ctx_t *ctx,
+    int          layer_index,
+    int          x1,
+    int          y1,
+    int          x2,
+    int          y2,
+    int          x3,
+    int          y3,
+    pixel_t      color);
 
 /*!
  * @brief put a layer on top
@@ -161,6 +190,69 @@ int top(layer_ctx_t *ctx, int layer_index);
  */
 int get_top_z_index(layer_ctx_t *ctx);
 
-int use_icon_32(layer_ctx_t *ctx, int layer_index, int icon_index);
+/*!
+ * @brief Use a resource
+ * @param ctx The compositor context
+ * @param layer_index The index of the layer
+ * @param resource_index The index of the resource
+ * @param stretch The stretch factor
+ * @return 0 on success, -1 on failure
+ */
+int use_resource(layer_ctx_t *ctx, int layer_index, int resource_index, int stretch);
 
-void sort_layer(layer_ctx_t* ctx);
+/*!
+ * @brief Sort the layers by z index
+ * @param ctx The compositor context
+ */
+void sort_layer(layer_ctx_t *ctx);
+
+/*!
+ * @brief Resize a layer to a new size
+ *
+ * @attention This function clears the layer buffer.
+ *
+ * @param ctx The compositor context
+ * @param layer_index The index of the layer
+ * @param width The new width
+ * @param height The new height
+ * @return 0 on success, -1 on failure
+ */
+int resize(layer_ctx_t *ctx, int layer_index, int width, int height);
+
+/*!
+ * @brief Clear a layer
+ * @param ctx The compositor context
+ * @param layer_index The index of the layer
+ * @return 0 on success, -1 on failure
+ */
+int clear(layer_ctx_t *ctx, int layer_index);
+
+/*!
+ * @brief Show a layer
+ * @param ctx The compositor context
+ * @param layer_index The index of the layer
+ * @return 0 on success, -1 on failure
+ */
+int show(layer_ctx_t *ctx, int layer_index);
+
+/*!
+ * @brief Hide a layer
+ * @param ctx The compositor context
+ * @param layer_index The index of the layer
+ * @return 0 on success, -1 on failure
+ */
+int hide(layer_ctx_t *ctx, int layer_index);
+
+/*!
+ * @brief Draw a rounded rectangle on a layer
+ * @param ctx The compositor context
+ * @param layer_index The index of the layer
+ * @param x The x position of the rectangle
+ * @param y The y position of the rectangle
+ * @param width The width of the rectangle
+ * @param height The height of the rectangle
+ * @param radius The radius of the rectangle corners
+ * @param color The color of the rectangle
+ * @return 0 on success, -1 on failure
+ */
+int rounded_rect(layer_ctx_t *ctx, int layer_index, int x, int y, int width, int height, int radius, pixel_t color);

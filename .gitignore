@@ -155,3 +155,5 @@ obj/*
 !/libgcc*.a
 
 .idea/
+
+myenv/
