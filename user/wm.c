@@ -570,44 +570,82 @@ int wm_updateTopWindow(wm_ctx_t* ctx, int cursor_x, int cursor_y) {
 }
 
 void wm_full_screen(wm_ctx_t* ctx) {
-    ctx->topWindow->next_wmN->window->x = 0;
-    ctx->topWindow->next_wmN->window->y = 0;
-    for(int i = 0; i < MAX_CONTENTS; i++){
-        if(ctx->topWindow->next_wmN->window->contents[i].layer_index != -1){
-            move(ctx->layer_ctx, ctx->topWindow->next_wmN->window->contents[i].layer_index, 0 + ctx->topWindow->next_wmN->window->contents[i].x, 0 + ctx->topWindow->next_wmN->window->contents[i].y);
+    if(ctx->topWindow->next_wmN->window->is_full_screen){
+        ctx->topWindow->next_wmN->window->is_full_screen = false;
+        ctx->topWindow->next_wmN->window->width = ctx->topWindow->next_wmN->window->old_width;
+        ctx->topWindow->next_wmN->window->height = ctx->topWindow->next_wmN->window->old_height;
+        int background_content_index;
+        for(int i = 0; i < MAX_CONTENTS; i++){
+            if(ctx->topWindow->next_wmN->window->contents[i].layer_index != -1){
+                background_content_index = i;
+                break;
+            }
         }
-    }
-    ctx->topWindow->next_wmN->window->width = SCREEN_WIDTH;
-    ctx->topWindow->next_wmN->window->height = SCREEN_HEIGHT;
-    int background_content_index;
-    for(int i = 0; i < MAX_CONTENTS; i++){
-        if(ctx->topWindow->next_wmN->window->contents[i].layer_index != -1){
-            background_content_index = i;
-            break;
-        }
-    }
-    ctx->topWindow->next_wmN->window->contents[background_content_index].width = SCREEN_WIDTH;
-    ctx->topWindow->next_wmN->window->contents[background_content_index].height = SCREEN_HEIGHT;
-    resize(ctx->layer_ctx, ctx->topWindow->next_wmN->window->contents[background_content_index].layer_index, SCREEN_WIDTH, SCREEN_HEIGHT);
-    rounded_rect(
-            ctx->layer_ctx,
-            ctx->topWindow->next_wmN->window->contents[background_content_index].layer_index,
-            0,
-            0,
-            SCREEN_WIDTH,
-            SCREEN_HEIGHT,
-            12,
-            0x808080);
+        ctx->topWindow->next_wmN->window->contents[background_content_index].width = ctx->topWindow->next_wmN->window->old_width;
+        ctx->topWindow->next_wmN->window->contents[background_content_index].height = ctx->topWindow->next_wmN->window->old_height;
+        resize(ctx->layer_ctx, ctx->topWindow->next_wmN->window->contents[background_content_index].layer_index, ctx->topWindow->next_wmN->window->old_width, ctx->topWindow->next_wmN->window->old_height);
+        clear(ctx->layer_ctx, ctx->topWindow->next_wmN->window->contents[background_content_index].layer_index);
         rounded_rect(
-            ctx->layer_ctx,
-            ctx->topWindow->next_wmN->window->contents[background_content_index].layer_index,
-            1,
-            1,
-            SCREEN_WIDTH - 2,
-            SCREEN_HEIGHT - 2,
-            11,
-            0x383838);
-    mark_dirty(ctx->layer_ctx, 0, 0, 1024, 768);
+                ctx->layer_ctx,
+                ctx->topWindow->next_wmN->window->contents[background_content_index].layer_index,
+                0,
+                0,
+                ctx->topWindow->next_wmN->window->old_width,
+                ctx->topWindow->next_wmN->window->old_height,
+                12,
+                0x808080);
+            rounded_rect(
+                ctx->layer_ctx,
+                ctx->topWindow->next_wmN->window->contents[background_content_index].layer_index,
+                1,
+                1,
+                ctx->topWindow->next_wmN->window->old_width - 2,
+                ctx->topWindow->next_wmN->window->old_height - 2,
+                11,
+                0x383838);
+        mark_dirty(ctx->layer_ctx, 0, 0, 1024, 768);
+    }else{
+        ctx->topWindow->next_wmN->window->is_full_screen = true;
+        ctx->topWindow->next_wmN->window->x = 0;
+        ctx->topWindow->next_wmN->window->y = 0;
+        for(int i = 0; i < MAX_CONTENTS; i++){
+            if(ctx->topWindow->next_wmN->window->contents[i].layer_index != -1){
+                move(ctx->layer_ctx, ctx->topWindow->next_wmN->window->contents[i].layer_index, 0 + ctx->topWindow->next_wmN->window->contents[i].x, 0 + ctx->topWindow->next_wmN->window->contents[i].y);
+            }
+        }
+        ctx->topWindow->next_wmN->window->width = SCREEN_WIDTH;
+        ctx->topWindow->next_wmN->window->height = SCREEN_HEIGHT;
+        int background_content_index;
+        for(int i = 0; i < MAX_CONTENTS; i++){
+            if(ctx->topWindow->next_wmN->window->contents[i].layer_index != -1){
+                background_content_index = i;
+                break;
+            }
+        }
+        ctx->topWindow->next_wmN->window->contents[background_content_index].width = SCREEN_WIDTH;
+        ctx->topWindow->next_wmN->window->contents[background_content_index].height = SCREEN_HEIGHT;
+        resize(ctx->layer_ctx, ctx->topWindow->next_wmN->window->contents[background_content_index].layer_index, SCREEN_WIDTH, SCREEN_HEIGHT);
+        clear(ctx->layer_ctx, ctx->topWindow->next_wmN->window->contents[background_content_index].layer_index);
+        rounded_rect(
+                ctx->layer_ctx,
+                ctx->topWindow->next_wmN->window->contents[background_content_index].layer_index,
+                0,
+                0,
+                SCREEN_WIDTH,
+                SCREEN_HEIGHT,
+                12,
+                0x808080);
+            rounded_rect(
+                ctx->layer_ctx,
+                ctx->topWindow->next_wmN->window->contents[background_content_index].layer_index,
+                1,
+                1,
+                SCREEN_WIDTH - 2,
+                SCREEN_HEIGHT - 2,
+                11,
+                0x383838);
+        mark_dirty(ctx->layer_ctx, 0, 0, 1024, 768);
+    }
 }
 
 void wm_move_top_window(wm_ctx_t* ctx) {
@@ -671,6 +709,9 @@ wm_window_t* ui_create_widget(int x, int y, int width, int height) {
         w->y      = y;
         w->width  = width;
         w->height = height;
+        w->is_full_screen = false;
+        w->old_width = width;
+        w->old_height = height;
 
         /*****background******** */
         w->contents[0].x           = 0;

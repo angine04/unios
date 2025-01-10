@@ -43,6 +43,10 @@ struct wm_window_t {
     int layer_count;
     int w_z_index;
     int button_count;
+
+    bool is_full_screen;
+    int old_width;
+    int old_height;
 };//窗口，x,y表示窗口左上角位置
 
 
