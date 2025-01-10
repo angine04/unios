@@ -121,7 +121,7 @@ layer_ctx_t* get_layer_ctx(wm_ctx_t* ctx);
 
 wm_window_t* get_window_ctx();
 
-
+void wm_move_top_window(wm_ctx_t* ctx);
 
 
 
@@ -203,6 +203,7 @@ void ui_hide(wm_window_t* window);
 void ui_full_screen(wm_window_t* window);
 void ui_refresh(wm_window_t* window);
 void ui_close(wm_window_t* window);
+void ui_move_window(wm_window_t* window);
 
 
 
