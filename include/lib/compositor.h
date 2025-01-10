@@ -296,3 +296,21 @@ int use_char(layer_ctx_t *ctx, int layer_index, char ch, float scale, pixel_t co
  * @return 0 on success, -1 on failure
  */
 int use_text(layer_ctx_t *ctx, int layer_index, char *text, float scale, pixel_t color);
+
+/*!
+ * @brief Draw a stroke on a window border
+ *
+ * @attention This function is only for window border acceleration. Full
+ * functionality is not supported yet.
+ *
+ * @param ctx The compositor context
+ * @param layer_index The index of the layer
+ * @param x The x position of the stroke
+ * @param y The y position of the stroke
+ * @param width The width of the stroke
+ * @param height The height of the stroke
+ * @param radius The radius of the stroke
+ * @param color The color of the stroke
+ * @return 0 on success, -1 on failure
+ */
+int rounded_rect_stroke(layer_ctx_t *ctx, int layer_index, int x, int y, int width, int height, int radius, pixel_t color);
