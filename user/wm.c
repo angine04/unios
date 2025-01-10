@@ -569,7 +569,46 @@ int wm_updateTopWindow(wm_ctx_t* ctx, int cursor_x, int cursor_y) {
 
 }
 
-void wm_resizeWindows(wm_window_t* window, int newWidth, int newHeight) {}
+void wm_full_screen(wm_ctx_t* ctx) {
+    ctx->topWindow->next_wmN->window->x = 0;
+    ctx->topWindow->next_wmN->window->y = 0;
+    for(int i = 0; i < MAX_CONTENTS; i++){
+        if(ctx->topWindow->next_wmN->window->contents[i].layer_index != -1){
+            move(ctx->layer_ctx, ctx->topWindow->next_wmN->window->contents[i].layer_index, 0 + ctx->topWindow->next_wmN->window->contents[i].x, 0 + ctx->topWindow->next_wmN->window->contents[i].y);
+        }
+    }
+    ctx->topWindow->next_wmN->window->width = SCREEN_WIDTH;
+    ctx->topWindow->next_wmN->window->height = SCREEN_HEIGHT;
+    int background_content_index;
+    for(int i = 0; i < MAX_CONTENTS; i++){
+        if(ctx->topWindow->next_wmN->window->contents[i].layer_index != -1){
+            background_content_index = i;
+            break;
+        }
+    }
+    ctx->topWindow->next_wmN->window->contents[background_content_index].width = SCREEN_WIDTH;
+    ctx->topWindow->next_wmN->window->contents[background_content_index].height = SCREEN_HEIGHT;
+    resize(ctx->layer_ctx, ctx->topWindow->next_wmN->window->contents[background_content_index].layer_index, SCREEN_WIDTH, SCREEN_HEIGHT);
+    rounded_rect(
+            ctx->layer_ctx,
+            ctx->topWindow->next_wmN->window->contents[background_content_index].layer_index,
+            0,
+            0,
+            SCREEN_WIDTH,
+            SCREEN_HEIGHT,
+            12,
+            0x808080);
+        rounded_rect(
+            ctx->layer_ctx,
+            ctx->topWindow->next_wmN->window->contents[background_content_index].layer_index,
+            1,
+            1,
+            SCREEN_WIDTH - 2,
+            SCREEN_HEIGHT - 2,
+            11,
+            0x383838);
+    mark_dirty(ctx->layer_ctx, 0, 0, 1024, 768);
+}
 
 void wm_move_top_window(wm_ctx_t* ctx) {
 
@@ -672,7 +711,7 @@ wm_window_t* ui_create_widget(int x, int y, int width, int height) {
         /*****title******** */
 
         /*****button******** */
-        w->contents[1].x           = width - 18;
+        w->contents[1].x           = 54;
         w->contents[1].y           = 6;
         w->contents[1].width       = 12;
         w->contents[1].height      = 12;
@@ -691,7 +730,7 @@ wm_window_t* ui_create_widget(int x, int y, int width, int height) {
         w->contents[1].callbackEnable = true;
         w->contents[1].dynamicSize    = false;
 
-        w->contents[2].x           = width - 36;
+        w->contents[2].x           = 36;
         w->contents[2].y           = 6;
         w->contents[2].width       = 12;
         w->contents[2].height      = 12;
@@ -710,7 +749,7 @@ wm_window_t* ui_create_widget(int x, int y, int width, int height) {
         w->contents[2].callbackEnable = true;
         w->contents[2].dynamicSize    = false;
 
-        w->contents[3].x           = width - 54;
+        w->contents[3].x           = 18;
         w->contents[3].y           = 6;
         w->contents[3].width       = 12;
         w->contents[3].height      = 12;
@@ -828,7 +867,7 @@ void ui_hide(wm_window_t* window) {
 }
 
 void ui_full_screen(wm_window_t* window) {
-    wm_resizeWindows(window, SCREEN_WIDTH, SCREEN_HEIGHT);
+    wm_full_screen(window_ctx);
 }
 
 void ui_refresh(wm_window_t* window) {}

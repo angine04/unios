@@ -115,7 +115,7 @@ int wm_updateTopWindow(wm_ctx_t *ctx, int cursor_x, int cursor_y);
 /*!
  * @brief Resize the Top USER window and components that belong it
  */
-void wm_resizeWindows(wm_window_t* window, int newWidth, int newHeight);
+void wm_full_screen(wm_ctx_t* ctx);
 
 layer_ctx_t* get_layer_ctx(wm_ctx_t* ctx);
 
