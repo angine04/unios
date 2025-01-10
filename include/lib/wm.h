@@ -137,6 +137,7 @@ void wm_move_top_window(wm_ctx_t* ctx);
 #define SCREEN_HEIGHT 768
 #define MIN_WIDGET_WIDTH 10
 #define MIN_WIDGET_HEIGHT 10
+#define STANDARD_WIDGET_LAYER_COUNT 4
 
 void GUI_init(wm_ctx_t* ctx);
 /*************基础控件****************** */
@@ -213,44 +214,10 @@ void ui_move_window(wm_window_t* window);
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* ******************USER PROC*********************** */
+
+// proc calculator
+void start_proc_calculator(wm_window_t* window);
+
+// proc sysinfo
+void start_proc_sysinfo(wm_window_t* window);

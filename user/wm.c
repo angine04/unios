@@ -311,7 +311,13 @@ int main() {
                         }
                     }
                 } else if (mouse_hit == HIT_DESKTOP) {
-
+                    for(int i = 1; i < MAX_CONTENTS; i++) {
+                        if(wm_ctx->bottomWindow->window->contents[i].layer_index != -1 && wm_ctx->bottomWindow->window->contents[i].callbackEnable == true){
+                            if(isHitByCursor(wm_ctx->bottomWindow->window->contents[i].x , wm_ctx->bottomWindow->window->contents[i].y , wm_ctx->bottomWindow->window->contents[i].width, wm_ctx->bottomWindow->window->contents[i].height,x, y) == 1){
+                                wm_ctx->bottomWindow->window->contents[i].bandFunction(wm_ctx->bottomWindow->window);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -338,6 +344,16 @@ void wm_init(wm_ctx_t* ctx) {
 
 void init_desktop(wm_ctx_t* ctx) {
     wm_window_t* w             = (wm_window_t*)malloc(sizeof(wm_window_t));
+    for (int i = 0; i < MAX_CONTENTS; i++) {
+        w->contents[i].x           = 0;
+        w->contents[i].y           = 0;
+        w->contents[i].width       = 0;
+        w->contents[i].height      = 0;
+        w->contents[i].z_index     = 0;
+        w->contents[i].layer_index = -1;
+    }
+
+
     w->w_z_index               = DESKTOP_Z_INDEX;
     w->id                      = 0;
     w->x                       = 0;
@@ -346,17 +362,33 @@ void init_desktop(wm_ctx_t* ctx) {
     w->contents[0].y           = 0;
     w->contents[0].width       = DISPLAY_WIDTH;
     w->contents[0].height      = DISPLAY_HEIGHT;
-    w->contents[0].z_index     = 0;
+    w->contents[0].z_index     = 2;
+    w->contents[0].bandFunction = NULL;
+    w->contents[0].belongWindow = w;
+    w->contents[0].callbackEnable = false;
+    w->contents[0].dynamicSize = false;
+
     w->contents[1].x           = 64;
     w->contents[1].y           = 32;
-    w->contents[1].width       = DISPLAY_WIDTH;
-    w->contents[1].height      = DISPLAY_HEIGHT;
-    w->contents[1].z_index     = 0;
+    w->contents[1].width       = 80;
+    w->contents[1].height      = 80;
+    w->contents[1].z_index     = 10;
+    w->contents[1].bandFunction = start_proc_sysinfo;
+    w->contents[1].belongWindow = w;
+    w->contents[1].callbackEnable = true;
+    w->contents[1].dynamicSize = false;
+
     w->contents[2].x           = 64;
     w->contents[2].y           = 128;
-    w->contents[2].width       = DISPLAY_WIDTH;
-    w->contents[2].height      = DISPLAY_HEIGHT;
-    w->contents[2].z_index     = 0;
+    w->contents[2].width       = 80;
+    w->contents[2].height      = 80;
+    w->contents[2].z_index     = 10;
+    w->contents[2].bandFunction = start_proc_calculator;
+    w->contents[2].belongWindow = w;
+    w->contents[2].callbackEnable = true;
+    w->contents[2].dynamicSize = false;
+
+
     w->contents[0].layer_index = create_layer(
         ctx->layer_ctx,
         w->contents[0].x,
@@ -385,6 +417,7 @@ void init_desktop(wm_ctx_t* ctx) {
     use_image(
         ctx->layer_ctx, w->contents[2].layer_index, RESOURCE_ICON_CALC, 1);
     w->layer_count = 3;
+    ctx->bottomWindow->window = w;
 }
 
 void init_cursor(wm_ctx_t* ctx) {
@@ -451,6 +484,7 @@ int wm_add_window(wm_ctx_t* ctx, wm_window_t* window) {
         }
     }
     sort_layer(ctx->layer_ctx);
+    mark_dirty(ctx->layer_ctx, window->x, window->y, window->x + window->width, window->y + window->height);
     return 0;
 }
 
@@ -742,6 +776,7 @@ wm_window_t* ui_create_widget(int x, int y, int width, int height) {
         w->is_full_screen = false;
         w->old_width = width;
         w->old_height = height;
+        w->layer_count = STANDARD_WIDGET_LAYER_COUNT;
 
         /*****background******** */
         w->contents[0].x           = 0;
@@ -869,7 +904,7 @@ int ui_create_button(
     window->contents[free_index].y       = y;
     window->contents[free_index].width   = width;
     window->contents[free_index].height  = height;
-    window->contents[free_index].z_index = z_index;
+    window->contents[free_index].z_index = z_index + 23;
     window->contents[free_index].layer_index =
         create_layer(layer_ctx, x, y, width, height, z_index);
     fill(layer_ctx, window->contents[free_index].layer_index, COLOR_BLACK);
@@ -885,6 +920,7 @@ int ui_create_button(
     window->contents[free_index].belongWindow   = window;
     window->contents[free_index].callbackEnable = true;
     window->contents[free_index].dynamicSize    = true;
+    window->layer_count++;
     return 0;
 }
 
@@ -917,7 +953,7 @@ int ui_create_image(
     window->contents[free_index].y       = y;
     window->contents[free_index].width   = width;
     window->contents[free_index].height  = height;
-    window->contents[free_index].z_index = z_index;
+    window->contents[free_index].z_index = z_index + 23;
     window->contents[free_index].layer_index =
         create_layer(layer_ctx, x, y, width, height, z_index);
     fill(layer_ctx, window->contents[free_index].layer_index, COLOR_BLACK);
@@ -926,6 +962,7 @@ int ui_create_image(
     window->contents[free_index].belongWindow   = window;
     window->contents[free_index].callbackEnable = false;
     window->contents[free_index].dynamicSize    = true;
+    window->layer_count++;
     return 0;
 }
 
@@ -949,4 +986,19 @@ void ui_close(wm_window_t* window) {
 
 void ui_move_window(wm_window_t* window) {
     wm_move_top_window(window_ctx);
+}
+
+
+/*************USER PROC*********************** */
+// proc calculator
+void start_proc_calculator(wm_window_t* window) {
+    wm_window_t* w = ui_create_widget(100, 100, 600, 450);
+    ui_create_button(100, 100, 100, 30, 10, "Close", ui_close, w);
+    ui_show(w);
+}
+
+// proc sysinfo
+void start_proc_sysinfo(wm_window_t* window) {
+    wm_window_t* w = ui_create_widget(100, 100, 400, 500);
+    ui_show(w);
 }
