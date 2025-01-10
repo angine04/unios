@@ -649,30 +649,60 @@ void wm_full_screen(wm_ctx_t* ctx) {
 }
 
 void wm_move_top_window(wm_ctx_t* ctx) {
+    if(ctx->topWindow->next_wmN->window->is_full_screen){
+        wm_full_screen(ctx);
+        mouse_t mouse  = get_mouse_status();
+        int     x      = mouse.x;
+        int     y      = mouse.y;
+        mouse_event_t event = pop_mouse_event();
 
-    mouse_t mouse  = get_mouse_status();
-    int     x      = mouse.x;
-    int     y      = mouse.y;
-    mouse_event_t event = pop_mouse_event();
-
-    while(event.event != MOUSE_LEFT_DOWN){
-        mouse = get_mouse_status();
-        x = mouse.x;
-        y = mouse.y;
-        event = pop_mouse_event();
-        int     cursor_layer_index =
-            ctx->topWindow->window->contents[0].layer_index;
-        move(ctx->layer_ctx, cursor_layer_index, x, y);
-        ctx->topWindow->next_wmN->window->x = x;
-        ctx->topWindow->next_wmN->window->y = y;
-        for(int i = 0; i < MAX_CONTENTS; i++){
-            if(ctx->topWindow->next_wmN->window->contents[i].layer_index != -1){
-                move(ctx->layer_ctx, ctx->topWindow->next_wmN->window->contents[i].layer_index, x + ctx->topWindow->next_wmN->window->contents[i].x, y + ctx->topWindow->next_wmN->window->contents[i].y);
+        while(event.event != MOUSE_LEFT_DOWN){
+            mouse = get_mouse_status();
+            x = mouse.x;
+            y = mouse.y;
+            event = pop_mouse_event();
+            int     cursor_layer_index =
+                ctx->topWindow->window->contents[0].layer_index;
+            move(ctx->layer_ctx, cursor_layer_index, x, y);
+            ctx->topWindow->next_wmN->window->x = x;
+            ctx->topWindow->next_wmN->window->y = y;
+            for(int i = 0; i < MAX_CONTENTS; i++){
+                if(ctx->topWindow->next_wmN->window->contents[i].layer_index != -1){
+                    move(ctx->layer_ctx, ctx->topWindow->next_wmN->window->contents[i].layer_index, x + ctx->topWindow->next_wmN->window->contents[i].x, y + ctx->topWindow->next_wmN->window->contents[i].y);
+                }
             }
+            mark_dirty(ctx->layer_ctx, x, y, x + ctx->topWindow->next_wmN->window->width, y + ctx->topWindow->next_wmN->window->height);
+            render(ctx->layer_ctx, get_pid());
         }
-        mark_dirty(ctx->layer_ctx, x, y, x + ctx->topWindow->next_wmN->window->width, y + ctx->topWindow->next_wmN->window->height);
-        render(ctx->layer_ctx, get_pid());
+    }else{
+        mouse_t mouse  = get_mouse_status();
+        int     x      = mouse.x;
+        int     y      = mouse.y;
+        mouse_event_t event = pop_mouse_event();
+
+        while(event.event != MOUSE_LEFT_DOWN){
+            mouse = get_mouse_status();
+            x = mouse.x;
+            y = mouse.y;
+            event = pop_mouse_event();
+            int     cursor_layer_index =
+                ctx->topWindow->window->contents[0].layer_index;
+            move(ctx->layer_ctx, cursor_layer_index, x, y);
+            ctx->topWindow->next_wmN->window->x = x;
+            ctx->topWindow->next_wmN->window->y = y;
+            for(int i = 0; i < MAX_CONTENTS; i++){
+                if(ctx->topWindow->next_wmN->window->contents[i].layer_index != -1){
+                    move(ctx->layer_ctx, ctx->topWindow->next_wmN->window->contents[i].layer_index, x + ctx->topWindow->next_wmN->window->contents[i].x, y + ctx->topWindow->next_wmN->window->contents[i].y);
+                }
+            }
+            mark_dirty(ctx->layer_ctx, x, y, x + ctx->topWindow->next_wmN->window->width, y + ctx->topWindow->next_wmN->window->height);
+            render(ctx->layer_ctx, get_pid());
+        }
     }
+
+
+
+
 }
 
 
