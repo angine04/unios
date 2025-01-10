@@ -281,7 +281,7 @@ int main() {
 
     GUI_init(wm_ctx);
     wm_window_t* w1 = NULL;
-    w1              = ui_create_widget(100, 100, 400, 300);
+    w1              = ui_create_widget(400, 100, 400, 300);
     ui_show(w1);
     GUI_init(wm_ctx);
     wm_window_t* w2 = NULL;
@@ -334,6 +334,16 @@ void init_desktop(wm_ctx_t* ctx) {
     w->contents[0].width       = DISPLAY_WIDTH;
     w->contents[0].height      = DISPLAY_HEIGHT;
     w->contents[0].z_index     = 0;
+    w->contents[1].x           = 64;
+    w->contents[1].y           = 32;
+    w->contents[1].width       = DISPLAY_WIDTH;
+    w->contents[1].height      = DISPLAY_HEIGHT;
+    w->contents[1].z_index     = 0;
+    w->contents[2].x           = 64;
+    w->contents[2].y           = 128;
+    w->contents[2].width       = DISPLAY_WIDTH;
+    w->contents[2].height      = DISPLAY_HEIGHT;
+    w->contents[2].z_index     = 0;
     w->contents[0].layer_index = create_layer(
         ctx->layer_ctx,
         w->contents[0].x,
@@ -352,11 +362,16 @@ void init_desktop(wm_ctx_t* ctx) {
         fill(ctx->layer_ctx, w->contents[0].layer_index, WALLPAPER_COLOR);
     }
     w->contents[1].layer_index = create_layer(
-        ctx->layer_ctx, w->contents[1].x, w->contents[1].y, 346, 16, 1);
+        ctx->layer_ctx, w->contents[1].x, w->contents[1].y, 64, 64, 1);
     clear(ctx->layer_ctx, w->contents[1].layer_index);
     use_image(
-        ctx->layer_ctx, w->contents[1].layer_index, RESOURCE_IMAGE_LETTERS, 0.5);
-    w->layer_count = 2;
+        ctx->layer_ctx, w->contents[1].layer_index, RESOURCE_ICON_UNIOS, 1);
+    w->contents[2].layer_index = create_layer(
+        ctx->layer_ctx, w->contents[2].x, w->contents[2].y, 64, 64, 2);
+    clear(ctx->layer_ctx, w->contents[2].layer_index);
+    use_image(
+        ctx->layer_ctx, w->contents[2].layer_index, RESOURCE_ICON_CALC, 1);
+    w->layer_count = 3;
 }
 
 void init_cursor(wm_ctx_t* ctx) {

@@ -54,9 +54,35 @@ int compositor_init(layer_ctx_t *ctx) {
         ctx->layers[i].use_alpha = false;
     }
 
-    int background_layer_index =
+    int splash_layer_index =
         create_layer(ctx, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, 0);
-    fill(ctx, background_layer_index, COLOR_TEAL);
+    fill(ctx, splash_layer_index, COLOR_BLACK);
+    for (int i = 0; i < 5; i++) {
+        rect(
+            ctx,
+            splash_layer_index,
+            DISPLAY_WIDTH / 2 - 45 + i * 20,
+            DISPLAY_HEIGHT / 2 - 15,
+            10,
+            30,
+            COLOR_WHITE);
+    }
+    rect(
+        ctx,
+        splash_layer_index,
+        DISPLAY_WIDTH / 2 - 35,
+        DISPLAY_HEIGHT / 2 + 10,
+        10,
+        5,
+        COLOR_WHITE);
+    rect(
+        ctx,
+        splash_layer_index,
+        DISPLAY_WIDTH / 2 + 5,
+        DISPLAY_HEIGHT / 2 - 15,
+        10,
+        5,
+        COLOR_WHITE);
     int pid = get_pid();
     render(ctx, pid);
 
@@ -488,7 +514,8 @@ int use_image(layer_ctx_t *ctx, int layer_index, int image_index, float scale) {
     if (scale - 0.5 < 0.000001) {
         for (int y = 0; y < images[image_index].height / 2; y++) {
             for (int x = 0; x < images[image_index].width / 2; x++) {
-                int src_offset = (y * 2) * images[image_index].width + (x * 2) + 1;
+                int src_offset =
+                    (y * 2) * images[image_index].width + (x * 2) + 1;
                 int dst_offset = y * (images[image_index].width / 2) + x;
                 layer->buf[dst_offset] = images[image_index].buf[src_offset];
             }
