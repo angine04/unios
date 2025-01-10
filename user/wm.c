@@ -11,6 +11,7 @@
 #include <malloc.h>
 #include <lib/mouse.h>
 
+
 #define USE_WALLPAPER 1
 
 #define WALLPAPER_COLOR 0xB5D4DB
@@ -303,11 +304,9 @@ int main() {
                 mouse_hit = wm_updateTopWindow(wm_ctx, mouse.x, mouse.y);
                 if (mouse_hit == HIT_TOP_WINDOW) {
                     for(int i = 0; i < MAX_CONTENTS; i++) {
-                        if(wm_ctx->topWindow->window->contents[i].layer_index != -1) {
-                            continue;
-                        }else if(wm_ctx->topWindow->window->contents[i].callbackEnable){
-                            if(isHitByCursor(wm_ctx->topWindow->window->contents[i].x, wm_ctx->topWindow->window->contents[i].y, wm_ctx->topWindow->window->contents[i].width, wm_ctx->topWindow->window->contents[i].height,x, y)){
-                                wm_ctx->topWindow->window->contents[i].bandFunction(wm_ctx->topWindow->window);
+                        if(wm_ctx->topWindow->next_wmN->window->contents[i].layer_index != -1 && wm_ctx->topWindow->next_wmN->window->contents[i].callbackEnable == true){
+                            if(isHitByCursor(wm_ctx->topWindow->next_wmN->window->contents[i].x + wm_ctx->topWindow->next_wmN->window->x, wm_ctx->topWindow->next_wmN->window->contents[i].y + wm_ctx->topWindow->next_wmN->window->y, wm_ctx->topWindow->next_wmN->window->contents[i].width, wm_ctx->topWindow->next_wmN->window->contents[i].height,x, y) == 1){
+                                wm_ctx->topWindow->next_wmN->window->contents[i].bandFunction(wm_ctx->topWindow->next_wmN->window);
                             }
                         }
                     }
@@ -465,11 +464,19 @@ int wm_remove_top_window(wm_ctx_t* ctx) {
         ctx->topWindow->next_wmN = p->next_wmN;
         p->next_wmN->pre_wmN     = ctx->topWindow;
 
+        for(int i = 0; i < MAX_CONTENTS; i++){
+            if(p->window->contents[i].layer_index != -1){
+                //TODO: 精确标记dirty area
+                mark_dirty(ctx->layer_ctx, 0, 0, 1024, 768);
+                release_layer(ctx->layer_ctx, p->window->contents[i].layer_index);
+            }
+        }
         free(p->window);
         p->pre_wmN  = NULL;
         p->next_wmN = NULL;
         free(p);
         ctx->window_count--;
+
     }
     return 0;
 }
@@ -569,8 +576,8 @@ layer_ctx_t* get_layer_ctx(wm_ctx_t* ctx) {
 }
 
 /* ******************GUI********************** */
-wm_ctx_t*    window_ctx;
-layer_ctx_t* layer_ctx;
+wm_ctx_t*    window_ctx = NULL;
+layer_ctx_t* layer_ctx = NULL;
 
 void GUI_init(wm_ctx_t* ctx) {
     window_ctx = ctx;
@@ -799,7 +806,5 @@ void ui_full_screen(wm_window_t* window) {
 void ui_refresh(wm_window_t* window) {}
 
 void ui_close(wm_window_t* window) {
-
     wm_remove_top_window(window_ctx);
-
 }
