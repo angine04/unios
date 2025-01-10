@@ -370,8 +370,8 @@ void init_desktop(wm_ctx_t* ctx) {
 
     w->contents[1].x           = 64;
     w->contents[1].y           = 32;
-    w->contents[1].width       = 80;
-    w->contents[1].height      = 80;
+    w->contents[1].width       = 64;
+    w->contents[1].height      = 64;
     w->contents[1].z_index     = 10;
     w->contents[1].bandFunction = start_proc_sysinfo;
     w->contents[1].belongWindow = w;
@@ -380,8 +380,8 @@ void init_desktop(wm_ctx_t* ctx) {
 
     w->contents[2].x           = 64;
     w->contents[2].y           = 128;
-    w->contents[2].width       = 80;
-    w->contents[2].height      = 80;
+    w->contents[2].width       = 64;
+    w->contents[2].height      = 64;
     w->contents[2].z_index     = 10;
     w->contents[2].bandFunction = start_proc_calculator;
     w->contents[2].belongWindow = w;
@@ -966,6 +966,35 @@ int ui_create_image(
     return 0;
 }
 
+int ui_create_textbox(int x, int y, int width, int height, int z_index, char *text, int background_color, int text_color, int font_size, wm_window_t* window) {
+    int free_index = -1;
+    for (int i = 0; i < MAX_CONTENTS; i++) {
+        if (window->contents[i].layer_index == -1) {
+            free_index = i;
+            break;
+        }
+    }
+    if (free_index == -1) { return -1; }
+    window->contents[free_index].x       = x;
+    window->contents[free_index].y       = y;
+    window->contents[free_index].width   = width;
+    window->contents[free_index].height  = height;
+    window->contents[free_index].z_index = z_index + 23;
+    window->contents[free_index].layer_index = create_layer(layer_ctx, x, y, width, height, z_index);
+    fill(layer_ctx, window->contents[free_index].layer_index, background_color);
+    // TODO: text(layer_ctx, window->contents[free_index].layer_index, text, text_color, font_size);
+    window->contents[free_index].bandFunction   = NULL;
+    window->contents[free_index].belongWindow   = window;
+    window->contents[free_index].callbackEnable = false;
+    window->contents[free_index].dynamicSize    = true;
+    window->layer_count++;
+    return window->contents[free_index].layer_index;
+}
+
+void ui_refresh_textbox(wm_window_t* window, int layer_index, char *text, int background_color, int text_color, int font_size) {
+    // TODO: text(layer_ctx, window->contents[free_index].layer_index, text, text_color, font_size);
+}
+
 void ui_show(wm_window_t* window) {
     wm_add_window(window_ctx, window);
 }
@@ -991,11 +1020,619 @@ void ui_move_window(wm_window_t* window) {
 
 /*************USER PROC*********************** */
 // proc calculator
+#define CALCULATOR_SYMBOL_QUEUE_SIZE 10
+#define CALCULATOR_SYMBOL_AC 11
+#define CALCULATOR_SYMBOL_BACKSPACE 12
+#define CALCULATOR_SYMBOL_EQUAL 13
+#define CALCULATOR_SYMBOL_POINT 14
+#define CALCULATOR_SYMBOL_DIVIDE 15
+#define CALCULATOR_SYMBOL_MULTIPLY 16
+#define CALCULATOR_SYMBOL_MINUS 17
+#define CALCULATOR_SYMBOL_PLUS 18
+
+typedef struct calculator_symbol {
+    struct calculator_symbol* next;
+    int key_value;
+} calculator_symbol;
+
+typedef struct calculator_queue {
+    calculator_symbol* head;
+    calculator_symbol* tail;
+} calculator_queue;
+
+calculator_queue* queue = NULL;
+char* screen_text = NULL;
+wm_window_t* window = NULL;
+int textbox_id = -1;
+
 void start_proc_calculator(wm_window_t* window) {
-    wm_window_t* w = ui_create_widget(100, 100, 600, 450);
-    ui_create_button(100, 100, 100, 30, 10, "Close", ui_close, w);
+
+    queue = (calculator_queue*)malloc(sizeof(calculator_queue));
+    queue->head = NULL;
+    queue->tail = NULL;
+    screen_text = (char*)malloc(CALCULATOR_SYMBOL_QUEUE_SIZE * sizeof(char));
+    wm_window_t* w = ui_create_widget(100, 100, 350, 600);
+    window = w;
+    ui_create_button(20, 160, 60, 60, 10, "AC", push_calculator_symbol_ac, w);
+    ui_create_button(100, 160, 60, 60, 11, "BACK", push_calculator_symbol_backspace, w);
+    ui_create_button(180, 160, 60, 60, 12, "EQUAL", push_calculator_symbol_equal, w);
+    ui_create_button(260, 160, 60, 60, 13, ".", push_calculator_symbol_point, w);
+    ui_create_button(20, 240, 60, 60, 14, "/", push_calculator_symbol_divide, w);
+    ui_create_button(100, 240, 60, 60, 15, "*", push_calculator_symbol_multiply, w);
+    ui_create_button(180, 240, 60, 60, 16, "-", push_calculator_symbol_minus, w);
+    ui_create_button(260, 240, 60, 60, 17, "+", push_calculator_symbol_plus, w);
+    ui_create_button(20, 320, 60, 60, 18, "0", push_calculator_symbol_0, w);
+    ui_create_button(100, 320, 60, 60, 19, "1", push_calculator_symbol_1, w);
+    ui_create_button(180, 320, 60, 60, 20, "2", push_calculator_symbol_2, w);
+    ui_create_button(260, 320, 60, 60, 21, "3", push_calculator_symbol_3, w);
+    ui_create_button(20, 400, 60, 60, 22, "4", push_calculator_symbol_4, w);
+    ui_create_button(100, 400, 60, 60, 23, "5", push_calculator_symbol_5, w);
+    ui_create_button(180, 400, 60, 60, 24, "6", push_calculator_symbol_6, w);
+    ui_create_button(260, 400, 60, 60, 25, "7", push_calculator_symbol_7, w);
+    ui_create_button(20, 480, 60, 60, 26, "8", push_calculator_symbol_8, w);
+    ui_create_button(260, 480, 60, 60, 27, "9", push_calculator_symbol_9, w);
+    textbox_id = ui_create_textbox(20, 60, 310, 60, 28, screen_text, COLOR_GREY, COLOR_WHITE, 20, w);
     ui_show(w);
 }
+
+void refresh_calculator_screen() {
+    // Convert queue to screen text
+    int i = 0;
+    calculator_symbol* current = queue->head;
+
+    if(current == NULL) {
+        screen_text[0] = '0';
+        screen_text[1] = '\0';
+    } else {
+        while(current != NULL) {
+            if(current->key_value >= 0 && current->key_value <= 9) {
+                screen_text[i++] = '0' + current->key_value;
+            } else if(current->key_value == CALCULATOR_SYMBOL_POINT) {
+                screen_text[i++] = '.';
+            } else if(current->key_value == CALCULATOR_SYMBOL_PLUS) {
+                screen_text[i++] = '+';
+            } else if(current->key_value == CALCULATOR_SYMBOL_MINUS) {
+                screen_text[i++] = '-';
+            } else if(current->key_value == CALCULATOR_SYMBOL_MULTIPLY) {
+                screen_text[i++] = '*';
+            } else if(current->key_value == CALCULATOR_SYMBOL_DIVIDE) {
+                screen_text[i++] = '/';
+            }
+            current = current->next;
+        }
+        screen_text[i] = '\0';
+    }
+
+    ui_refresh_textbox(window, textbox_id, screen_text, COLOR_GREY, COLOR_WHITE, 20);
+}
+
+void push_calculator_symbol_ac(wm_window_t* window){
+    calculator_symbol* current = queue->head;
+    calculator_symbol* next;
+
+    // Free all nodes in the queue
+    while(current != NULL){
+        next = current->next;
+        free(current);
+        current = next;
+    }
+
+    // Reset queue to empty state
+    queue->head = NULL;
+    queue->tail = NULL;
+    refresh_calculator_screen();
+}
+
+void push_calculator_symbol_backspace(wm_window_t* window){
+    if(queue->head == NULL) {
+        // Queue is empty, nothing to delete
+        refresh_calculator_screen();
+        return;
+    }
+
+    if(queue->head == queue->tail) {
+        // Only one node in queue
+        free(queue->head);
+        queue->head = NULL;
+        queue->tail = NULL;
+        refresh_calculator_screen();
+        return;
+    }
+
+    // Find second to last node
+    calculator_symbol* current = queue->head;
+    while(current->next != queue->tail) {
+        current = current->next;
+    }
+
+    // Delete last node and update tail
+    free(queue->tail);
+    queue->tail = current;
+    current->next = NULL;
+
+    refresh_calculator_screen();
+}
+
+void push_calculator_symbol_equal(wm_window_t* window){
+    if(queue->head == NULL) {
+        screen_text[0] = '0';
+        screen_text[1] = '\0';
+        return;
+    }
+
+    // Parse expression and calculate result
+    double result = 0;
+    double current_num = 0;
+    int current_operator = CALCULATOR_SYMBOL_PLUS;
+    calculator_symbol* current = queue->head;
+
+    while(current != NULL) {
+        if(current->key_value >= 0 &&
+           current->key_value <= 9) {
+            current_num = current_num * 10 + (current->key_value - 0);
+        }
+        else if(current->key_value == CALCULATOR_SYMBOL_POINT) {
+            double decimal = 0.1;
+            current = current->next;
+            while(current != NULL &&
+                  current->key_value >= 0 &&
+                  current->key_value <= 9) {
+                current_num += (current->key_value - 0) * decimal;
+                decimal *= 0.1;
+                current = current->next;
+            }
+            continue;
+        }
+        else {
+            // Process operator
+            switch(current_operator) {
+                case CALCULATOR_SYMBOL_PLUS: result += current_num; break;
+                case CALCULATOR_SYMBOL_MINUS: result -= current_num; break;
+                case CALCULATOR_SYMBOL_MULTIPLY: result *= current_num; break;
+                case CALCULATOR_SYMBOL_DIVIDE:
+                    if(current_num != 0) {
+                        result /= current_num;
+                    }
+                    break;
+            }
+            current_num = 0;
+
+            if(current->key_value == CALCULATOR_SYMBOL_PLUS ||
+               current->key_value == CALCULATOR_SYMBOL_MINUS ||
+               current->key_value == CALCULATOR_SYMBOL_MULTIPLY ||
+               current->key_value == CALCULATOR_SYMBOL_DIVIDE) {
+                current_operator = current->key_value;
+            }
+        }
+        current = current->next;
+    }
+
+    // Process final number
+    switch(current_operator) {
+        case CALCULATOR_SYMBOL_PLUS: result += current_num; break;
+        case CALCULATOR_SYMBOL_MINUS: result -= current_num; break;
+        case CALCULATOR_SYMBOL_MULTIPLY: result *= current_num; break;
+        case CALCULATOR_SYMBOL_DIVIDE:
+            if(current_num != 0) {
+                result /= current_num;
+            }
+            break;
+    }
+
+    // Convert result to string
+    int integer_part = (int)result;
+    double decimal_part = result - integer_part;
+
+    // Convert integer part
+    int i = 0;
+    if(integer_part == 0) {
+        screen_text[i++] = '0';
+    } else {
+        char temp[CALCULATOR_SYMBOL_QUEUE_SIZE];
+        int j = 0;
+
+        while(integer_part > 0 && i < CALCULATOR_SYMBOL_QUEUE_SIZE - 1) {
+            temp[j++] = '0' + (integer_part % 10);
+            integer_part /= 10;
+        }
+
+        while(j > 0 && i < CALCULATOR_SYMBOL_QUEUE_SIZE - 1) {
+            screen_text[i++] = temp[--j];
+        }
+    }
+
+    // Add decimal point and decimal part if needed
+    if(decimal_part > 0 && i < CALCULATOR_SYMBOL_QUEUE_SIZE - 2) {
+        screen_text[i++] = '.';
+
+        // Convert up to 6 decimal places
+        int decimal_places = 0;
+        while(decimal_part > 0 && decimal_places < 6 && i < CALCULATOR_SYMBOL_QUEUE_SIZE - 1) {
+            decimal_part *= 10;
+            int digit = (int)decimal_part;
+            screen_text[i++] = '0' + digit;
+            decimal_part -= digit;
+            decimal_places++;
+        }
+    }
+    refresh_calculator_screen();
+}
+
+void push_calculator_symbol_point(wm_window_t* window){
+    // Check queue length
+    int length = 0;
+    calculator_symbol* current = queue->head;
+    while(current != NULL) {
+        length++;
+        current = current->next;
+    }
+    if(length >= CALCULATOR_SYMBOL_QUEUE_SIZE) {
+        return;
+    }
+
+    calculator_symbol* symbol = (calculator_symbol*)malloc(sizeof(calculator_symbol));
+    symbol->key_value = CALCULATOR_SYMBOL_POINT;
+    symbol->next = NULL;
+    if(queue->head == NULL){
+        queue->head = symbol;
+        queue->tail = symbol;
+    }else{
+        queue->tail->next = symbol;
+        queue->tail = symbol;
+    }
+    refresh_calculator_screen();
+}
+
+void push_calculator_symbol_divide(wm_window_t* window){
+    // Check queue length
+    int length = 0;
+    calculator_symbol* current = queue->head;
+    while(current != NULL) {
+        length++;
+        current = current->next;
+    }
+    if(length >= CALCULATOR_SYMBOL_QUEUE_SIZE) {
+        return;
+    }
+
+    calculator_symbol* symbol = (calculator_symbol*)malloc(sizeof(calculator_symbol));
+    symbol->key_value = CALCULATOR_SYMBOL_DIVIDE;
+    symbol->next = NULL;
+    if(queue->head == NULL){
+        queue->head = symbol;
+        queue->tail = symbol;
+    }else{
+        queue->tail->next = symbol;
+        queue->tail = symbol;
+    }
+    refresh_calculator_screen();
+}
+
+void push_calculator_symbol_multiply(wm_window_t* window){
+    // Check queue length
+    int length = 0;
+    calculator_symbol* current = queue->head;
+    while(current != NULL) {
+        length++;
+        current = current->next;
+    }
+    if(length >= CALCULATOR_SYMBOL_QUEUE_SIZE) {
+        return;
+    }
+
+    calculator_symbol* symbol = (calculator_symbol*)malloc(sizeof(calculator_symbol));
+    symbol->key_value = CALCULATOR_SYMBOL_MULTIPLY;
+    symbol->next = NULL;
+    if(queue->head == NULL){
+        queue->head = symbol;
+        queue->tail = symbol;
+    }else{
+        queue->tail->next = symbol;
+        queue->tail = symbol;
+    }
+    refresh_calculator_screen();
+}
+
+void push_calculator_symbol_minus(wm_window_t* window){
+    // Check queue length
+    int length = 0;
+    calculator_symbol* current = queue->head;
+    while(current != NULL) {
+        length++;
+        current = current->next;
+    }
+    if(length >= CALCULATOR_SYMBOL_QUEUE_SIZE) {
+        return;
+    }
+
+    calculator_symbol* symbol = (calculator_symbol*)malloc(sizeof(calculator_symbol));
+    symbol->key_value = CALCULATOR_SYMBOL_MINUS;
+    symbol->next = NULL;
+    if(queue->head == NULL){
+        queue->head = symbol;
+        queue->tail = symbol;
+    }else{
+        queue->tail->next = symbol;
+        queue->tail = symbol;
+    }
+    refresh_calculator_screen();
+}
+
+void push_calculator_symbol_plus(wm_window_t* window){
+    // Check queue length
+    int length = 0;
+    calculator_symbol* current = queue->head;
+    while(current != NULL) {
+        length++;
+        current = current->next;
+    }
+    if(length >= CALCULATOR_SYMBOL_QUEUE_SIZE) {
+        return;
+    }
+
+    calculator_symbol* symbol = (calculator_symbol*)malloc(sizeof(calculator_symbol));
+    symbol->key_value = CALCULATOR_SYMBOL_PLUS;
+    symbol->next = NULL;
+    if(queue->head == NULL){
+        queue->head = symbol;
+        queue->tail = symbol;
+    }else{
+        queue->tail->next = symbol;
+        queue->tail = symbol;
+    }
+    refresh_calculator_screen();
+}
+
+void push_calculator_symbol_0(wm_window_t* window){
+    // Check queue length
+    int length = 0;
+    calculator_symbol* current = queue->head;
+    while(current != NULL) {
+        length++;
+        current = current->next;
+    }
+    if(length >= CALCULATOR_SYMBOL_QUEUE_SIZE) {
+        return;
+    }
+
+    calculator_symbol* symbol = (calculator_symbol*)malloc(sizeof(calculator_symbol));
+    symbol->key_value = 0;
+    symbol->next = NULL;
+    if(queue->head == NULL){
+        queue->head = symbol;
+        queue->tail = symbol;
+    }else{
+        queue->tail->next = symbol;
+        queue->tail = symbol;
+    }
+    refresh_calculator_screen();
+}
+
+void push_calculator_symbol_1(wm_window_t* window){
+    // Check queue length
+    int length = 0;
+    calculator_symbol* current = queue->head;
+    while(current != NULL) {
+        length++;
+        current = current->next;
+    }
+    if(length >= CALCULATOR_SYMBOL_QUEUE_SIZE) {
+        return;
+    }
+
+    calculator_symbol* symbol = (calculator_symbol*)malloc(sizeof(calculator_symbol));
+    symbol->key_value = 1;
+    symbol->next = NULL;
+    if(queue->head == NULL){
+        queue->head = symbol;
+        queue->tail = symbol;
+    }else{
+        queue->tail->next = symbol;
+        queue->tail = symbol;
+    }
+    refresh_calculator_screen();
+}
+
+void push_calculator_symbol_2(wm_window_t* window){
+    // Check queue length
+    int length = 0;
+    calculator_symbol* current = queue->head;
+    while(current != NULL) {
+        length++;
+        current = current->next;
+    }
+    if(length >= CALCULATOR_SYMBOL_QUEUE_SIZE) {
+        return;
+    }
+
+    calculator_symbol* symbol = (calculator_symbol*)malloc(sizeof(calculator_symbol));
+    symbol->key_value = 2;
+    symbol->next = NULL;
+    if(queue->head == NULL){
+        queue->head = symbol;
+        queue->tail = symbol;
+    }else{
+        queue->tail->next = symbol;
+        queue->tail = symbol;
+    }
+    refresh_calculator_screen();
+}
+
+void push_calculator_symbol_3(wm_window_t* window){
+    // Check queue length
+    int length = 0;
+    calculator_symbol* current = queue->head;
+    while(current != NULL) {
+        length++;
+        current = current->next;
+    }
+    if(length >= CALCULATOR_SYMBOL_QUEUE_SIZE) {
+        return;
+    }
+
+    calculator_symbol* symbol = (calculator_symbol*)malloc(sizeof(calculator_symbol));
+    symbol->key_value = 3;
+    symbol->next = NULL;
+    if(queue->head == NULL){
+        queue->head = symbol;
+        queue->tail = symbol;
+    }else{
+        queue->tail->next = symbol;
+        queue->tail = symbol;
+    }
+    refresh_calculator_screen();
+}
+
+void push_calculator_symbol_4(wm_window_t* window){
+    // Check queue length
+    int length = 0;
+    calculator_symbol* current = queue->head;
+    while(current != NULL) {
+        length++;
+        current = current->next;
+    }
+    if(length >= CALCULATOR_SYMBOL_QUEUE_SIZE) {
+        return;
+    }
+
+    calculator_symbol* symbol = (calculator_symbol*)malloc(sizeof(calculator_symbol));
+    symbol->key_value = 4;
+    symbol->next = NULL;
+    if(queue->head == NULL){
+        queue->head = symbol;
+        queue->tail = symbol;
+    }else{
+        queue->tail->next = symbol;
+        queue->tail = symbol;
+    }
+    refresh_calculator_screen();
+}
+
+void push_calculator_symbol_5(wm_window_t* window){
+    // Check queue length
+    int length = 0;
+    calculator_symbol* current = queue->head;
+    while(current != NULL) {
+        length++;
+        current = current->next;
+    }
+    if(length >= CALCULATOR_SYMBOL_QUEUE_SIZE) {
+        return;
+    }
+
+    calculator_symbol* symbol = (calculator_symbol*)malloc(sizeof(calculator_symbol));
+    symbol->key_value = 5;
+    symbol->next = NULL;
+    if(queue->head == NULL){
+        queue->head = symbol;
+        queue->tail = symbol;
+    }else{
+        queue->tail->next = symbol;
+        queue->tail = symbol;
+    }
+    refresh_calculator_screen();
+}
+
+void push_calculator_symbol_6(wm_window_t* window){
+    // Check queue length
+    int length = 0;
+    calculator_symbol* current = queue->head;
+    while(current != NULL) {
+        length++;
+        current = current->next;
+    }
+    if(length >= CALCULATOR_SYMBOL_QUEUE_SIZE) {
+        return;
+    }
+
+    calculator_symbol* symbol = (calculator_symbol*)malloc(sizeof(calculator_symbol));
+    symbol->key_value = 6;
+    symbol->next = NULL;
+    if(queue->head == NULL){
+        queue->head = symbol;
+        queue->tail = symbol;
+    }else{
+        queue->tail->next = symbol;
+        queue->tail = symbol;
+    }
+    refresh_calculator_screen();
+}
+
+void push_calculator_symbol_7(wm_window_t* window){
+    // Check queue length
+    int length = 0;
+    calculator_symbol* current = queue->head;
+    while(current != NULL) {
+        length++;
+        current = current->next;
+    }
+    if(length >= CALCULATOR_SYMBOL_QUEUE_SIZE) {
+        return;
+    }
+
+    calculator_symbol* symbol = (calculator_symbol*)malloc(sizeof(calculator_symbol));
+    symbol->key_value = 7;
+    symbol->next = NULL;
+    if(queue->head == NULL){
+        queue->head = symbol;
+        queue->tail = symbol;
+    }else{
+        queue->tail->next = symbol;
+        queue->tail = symbol;
+    }
+    refresh_calculator_screen();
+}
+
+void push_calculator_symbol_8(wm_window_t* window){
+    // Check queue length
+    int length = 0;
+    calculator_symbol* current = queue->head;
+    while(current != NULL) {
+        length++;
+        current = current->next;
+    }
+    if(length >= CALCULATOR_SYMBOL_QUEUE_SIZE) {
+        return;
+    }
+
+    calculator_symbol* symbol = (calculator_symbol*)malloc(sizeof(calculator_symbol));
+    symbol->key_value = 8;
+    symbol->next = NULL;
+    if(queue->head == NULL){
+        queue->head = symbol;
+        queue->tail = symbol;
+    }else{
+        queue->tail->next = symbol;
+        queue->tail = symbol;
+    }
+    refresh_calculator_screen();
+}
+
+void push_calculator_symbol_9(wm_window_t* window){
+    // Check queue length
+    int length = 0;
+    calculator_symbol* current = queue->head;
+    while(current != NULL) {
+        length++;
+        current = current->next;
+    }
+    if(length >= CALCULATOR_SYMBOL_QUEUE_SIZE) {
+        return;
+    }
+
+    calculator_symbol* symbol = (calculator_symbol*)malloc(sizeof(calculator_symbol));
+    symbol->key_value = 9;
+    symbol->next = NULL;
+    if(queue->head == NULL){
+        queue->head = symbol;
+        queue->tail = symbol;
+    }else{
+        queue->tail->next = symbol;
+        queue->tail = symbol;
+    }
+    refresh_calculator_screen();
+}
+
 
 // proc sysinfo
 void start_proc_sysinfo(wm_window_t* window) {

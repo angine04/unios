@@ -1,5 +1,5 @@
 /* ******************wm*********************** */
-#define MAX_CONTENTS 20
+#define MAX_CONTENTS 40
 #define CURSOR_Z_INDEX 65535
 #define DESKTOP_Z_INDEX 1
 
@@ -194,14 +194,14 @@ int ui_create_image(int x, int y, int width, int height, int z_index, char *imag
  * @param height The height of the textbox
  * @param text The text of the textbox
  * @param window The window to add the textbox
- * @return textbox id
+ * @return textbox layer index
  */
-int ui_create_textbox(int x, int y, int width, int height, char *text, wm_window_t* window);
+int ui_create_textbox(int x, int y, int width, int height, int z_index, char *text, int background_color, int text_color, int font_size, wm_window_t* window);
 
 /*************事件处理****************** */
 
 
-
+void ui_refresh_textbox(wm_window_t* window, int layer_index, char *text, int background_color, int text_color, int font_size);
 
 void ui_show(wm_window_t* window);
 void ui_hide(wm_window_t* window);
@@ -218,6 +218,24 @@ void ui_move_window(wm_window_t* window);
 
 // proc calculator
 void start_proc_calculator(wm_window_t* window);
+void push_calculator_symbol_ac(wm_window_t* window);
+void push_calculator_symbol_backspace(wm_window_t* window);
+void push_calculator_symbol_equal(wm_window_t* window);
+void push_calculator_symbol_point(wm_window_t* window);
+void push_calculator_symbol_divide(wm_window_t* window);
+void push_calculator_symbol_multiply(wm_window_t* window);
+void push_calculator_symbol_minus(wm_window_t* window);
+void push_calculator_symbol_plus(wm_window_t* window);
+void push_calculator_symbol_0(wm_window_t* window);
+void push_calculator_symbol_1(wm_window_t* window);
+void push_calculator_symbol_2(wm_window_t* window);
+void push_calculator_symbol_3(wm_window_t* window);
+void push_calculator_symbol_4(wm_window_t* window);
+void push_calculator_symbol_5(wm_window_t* window);
+void push_calculator_symbol_6(wm_window_t* window);
+void push_calculator_symbol_7(wm_window_t* window);
+void push_calculator_symbol_8(wm_window_t* window);
+void push_calculator_symbol_9(wm_window_t* window);
 
 // proc sysinfo
 void start_proc_sysinfo(wm_window_t* window);
