@@ -19,6 +19,12 @@ typedef struct {
     bool     use_alpha;
 } layer_t;
 
+typedef struct {
+    int x1, y1;  // top-left corner
+    int x2, y2;  // bottom-right corner
+} dirty_rect_t;
+
+
 /*!
  * @brief Layer context
  */
@@ -27,6 +33,8 @@ typedef struct {
     int     layer_num;
     int     top_z_index;
     int     sorted_indices[LAYER_MAX_NUM];
+    dirty_rect_t dirty_rect;
+    bool    is_dirty;
 } layer_ctx_t;
 
 /*!
@@ -191,14 +199,14 @@ int top(layer_ctx_t *ctx, int layer_index);
 int get_top_z_index(layer_ctx_t *ctx);
 
 /*!
- * @brief Use a resource
+ * @brief Use a image
  * @param ctx The compositor context
  * @param layer_index The index of the layer
- * @param resource_index The index of the resource
- * @param stretch The stretch factor
+ * @param image_index The index of the image
+ * @param scale The scale factor
  * @return 0 on success, -1 on failure
  */
-int use_resource(layer_ctx_t *ctx, int layer_index, int resource_index, int stretch);
+int use_image(layer_ctx_t *ctx, int layer_index, int image_index, float scale);
 
 /*!
  * @brief Sort the layers by z index
@@ -256,3 +264,13 @@ int hide(layer_ctx_t *ctx, int layer_index);
  * @return 0 on success, -1 on failure
  */
 int rounded_rect(layer_ctx_t *ctx, int layer_index, int x, int y, int width, int height, int radius, pixel_t color);
+
+/*!
+ * @brief Mark a region as dirty
+ * @param ctx The compositor context
+ * @param x The x position of the dirty region
+ * @param y The y position of the dirty region
+ * @param width The width of the dirty region
+ * @param height The height of the dirty region
+ */
+void mark_dirty(layer_ctx_t *ctx, int x, int y, int width, int height);

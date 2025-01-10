@@ -559,6 +559,7 @@ int wm_updateTopWindow(wm_ctx_t* ctx, int cursor_x, int cursor_y) {
         p->window->y + p->window->height - 1);
     mark_dirty(ctx->layer_ctx, 0, 0, 1024, 768);
     return HIT_OTHER_WINDOW;
+
 }
 
 void wm_resizeWindows(wm_window_t* window, int newWidth, int newHeight) {}
@@ -798,5 +799,7 @@ void ui_full_screen(wm_window_t* window) {
 void ui_refresh(wm_window_t* window) {}
 
 void ui_close(wm_window_t* window) {
+
     wm_remove_top_window(window_ctx);
+
 }
