@@ -55,7 +55,7 @@ const image_t images[] = {
     {(pixel_t *)char_f, 12, 32, true},
     {(pixel_t *)char_g, 18, 32, true},
     {(pixel_t *)char_h, 16, 32, true},
-    {(pixel_t *)char_i, 6, 32, true},
+    {(pixel_t *)char_i, 8, 32, true},
     {(pixel_t *)char_j, 10, 32, true},
     {(pixel_t *)char_k, 16, 32, true},
     {(pixel_t *)char_l, 6, 32, true},

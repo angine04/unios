@@ -681,8 +681,26 @@ wm_window_t* ui_create_widget(int x, int y, int width, int height) {
 
         /*****image******** */
 
-        /*****textbox******** */
+        w->contents[4].x           = 24;
+        w->contents[4].y           = 24;
+        w->contents[4].width       = 113;
+        w->contents[4].height      = 32;
+        w->contents[4].z_index     = 23;
+        w->contents[4].layer_index = create_layer(
+            layer_ctx,
+            w->contents[4].x,
+            w->contents[4].y,
+            w->contents[4].width,
+            w->contents[4].height,
+            23);
+        clear(layer_ctx, w->contents[4].layer_index);
+        use_text(layer_ctx, w->contents[4].layer_index, "window", 1, 0xFFFFFF);
+        w->contents[4].bandFunction   = NULL;
+        w->contents[4].belongWindow   = w;
+        w->contents[4].callbackEnable = false;
+        w->contents[4].dynamicSize    = false;
 
+        /*****textbox******** */
         return w;
     }
 }

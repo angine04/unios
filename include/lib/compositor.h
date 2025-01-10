@@ -285,3 +285,14 @@ void mark_dirty(layer_ctx_t *ctx, int x, int y, int width, int height);
  * @return 0 on success, -1 on failure
  */
 int use_char(layer_ctx_t *ctx, int layer_index, char ch, float scale, pixel_t color);
+
+/*!
+ * @brief Draw a text on a layer
+ * @param ctx The compositor context
+ * @param layer_index The index of the layer
+ * @param text The text to draw
+ * @param scale The scale factor
+ * @param color The color of the text
+ * @return 0 on success, -1 on failure
+ */
+int use_text(layer_ctx_t *ctx, int layer_index, char *text, float scale, pixel_t color);
