@@ -11,6 +11,7 @@
 #include <malloc.h>
 #include <lib/mouse.h>
 
+
 #define USE_WALLPAPER 1
 
 #define WALLPAPER_COLOR 0xB5D4DB
@@ -299,7 +300,19 @@ int main() {
         while (!mouse_event_empty()) {
             mouse_event_t event = pop_mouse_event();
             if (event.event == MOUSE_LEFT_DOWN) {
-                wm_updateTopWindow(wm_ctx, mouse.x, mouse.y);
+                int mouse_hit = -1;
+                mouse_hit = wm_updateTopWindow(wm_ctx, mouse.x, mouse.y);
+                if (mouse_hit == HIT_TOP_WINDOW) {
+                    for(int i = 0; i < MAX_CONTENTS; i++) {
+                        if(wm_ctx->topWindow->next_wmN->window->contents[i].layer_index != -1 && wm_ctx->topWindow->next_wmN->window->contents[i].callbackEnable == true){
+                            if(isHitByCursor(wm_ctx->topWindow->next_wmN->window->contents[i].x + wm_ctx->topWindow->next_wmN->window->x, wm_ctx->topWindow->next_wmN->window->contents[i].y + wm_ctx->topWindow->next_wmN->window->y, wm_ctx->topWindow->next_wmN->window->contents[i].width, wm_ctx->topWindow->next_wmN->window->contents[i].height,x, y) == 1){
+                                wm_ctx->topWindow->next_wmN->window->contents[i].bandFunction(wm_ctx->topWindow->next_wmN->window);
+                            }
+                        }
+                    }
+                } else if (mouse_hit == HIT_DESKTOP) {
+
+                }
             }
         }
         render(layer_ctx, pid);
@@ -451,16 +464,24 @@ int wm_remove_top_window(wm_ctx_t* ctx) {
         ctx->topWindow->next_wmN = p->next_wmN;
         p->next_wmN->pre_wmN     = ctx->topWindow;
 
+        for(int i = 0; i < MAX_CONTENTS; i++){
+            if(p->window->contents[i].layer_index != -1){
+                //TODO: 精确标记dirty area
+                mark_dirty(ctx->layer_ctx, 0, 0, 1024, 768);
+                release_layer(ctx->layer_ctx, p->window->contents[i].layer_index);
+            }
+        }
         free(p->window);
         p->pre_wmN  = NULL;
         p->next_wmN = NULL;
         free(p);
         ctx->window_count--;
+
     }
     return 0;
 }
 
-void wm_updateTopWindow(wm_ctx_t* ctx, int cursor_x, int cursor_y) {
+int wm_updateTopWindow(wm_ctx_t* ctx, int cursor_x, int cursor_y) {
     // 检索鼠标点击处触发了哪个非用户TOP WINDOW的窗口
     wm_windowNode* p = ctx->topWindow->next_wmN;
     if (isHitByCursor(
@@ -470,7 +491,7 @@ void wm_updateTopWindow(wm_ctx_t* ctx, int cursor_x, int cursor_y) {
             p->window->height,
             cursor_x,
             cursor_y)) {
-        return; // 点击的是顶层窗口
+        return HIT_TOP_WINDOW; // 点击的是顶层窗口
     }
     p     = ctx->topWindow->next_wmN->next_wmN;
     int t = 0;
@@ -488,7 +509,7 @@ void wm_updateTopWindow(wm_ctx_t* ctx, int cursor_x, int cursor_y) {
         p = p->next_wmN;
     }
     if (t == 0) { // 点击了桌面
-        return;
+        return HIT_DESKTOP;
     }
     // 将触发的窗口提升到顶层，w z
     // index为前顶层窗口的数值,重新计算并设定组件图层layer z index
@@ -544,17 +565,47 @@ void wm_updateTopWindow(wm_ctx_t* ctx, int cursor_x, int cursor_y) {
         p->window->x + p->window->width - 1,
         p->window->y + p->window->height - 1);
     mark_dirty(ctx->layer_ctx, 0, 0, 1024, 768);
+    return HIT_OTHER_WINDOW;
+
 }
 
 void wm_resizeWindows(wm_window_t* window, int newWidth, int newHeight) {}
+
+void wm_move_top_window(wm_ctx_t* ctx) {
+
+    mouse_t mouse  = get_mouse_status();
+    int     x      = mouse.x;
+    int     y      = mouse.y;
+    mouse_event_t event = pop_mouse_event();
+
+    while(event.event != MOUSE_LEFT_DOWN){
+        mouse = get_mouse_status();
+        x = mouse.x;
+        y = mouse.y;
+        event = pop_mouse_event();
+        int     cursor_layer_index =
+            ctx->topWindow->window->contents[0].layer_index;
+        move(ctx->layer_ctx, cursor_layer_index, x, y);
+        ctx->topWindow->next_wmN->window->x = x;
+        ctx->topWindow->next_wmN->window->y = y;
+        for(int i = 0; i < MAX_CONTENTS; i++){
+            if(ctx->topWindow->next_wmN->window->contents[i].layer_index != -1){
+                move(ctx->layer_ctx, ctx->topWindow->next_wmN->window->contents[i].layer_index, x + ctx->topWindow->next_wmN->window->contents[i].x, y + ctx->topWindow->next_wmN->window->contents[i].y);
+            }
+        }
+        mark_dirty(ctx->layer_ctx, x, y, x + ctx->topWindow->next_wmN->window->width, y + ctx->topWindow->next_wmN->window->height);
+        render(ctx->layer_ctx, get_pid());
+    }
+}
+
 
 layer_ctx_t* get_layer_ctx(wm_ctx_t* ctx) {
     return ctx->layer_ctx;
 }
 
 /* ******************GUI********************** */
-wm_ctx_t*    window_ctx;
-layer_ctx_t* layer_ctx;
+wm_ctx_t*    window_ctx = NULL;
+layer_ctx_t* layer_ctx = NULL;
 
 void GUI_init(wm_ctx_t* ctx) {
     window_ctx = ctx;
@@ -654,7 +705,7 @@ wm_window_t* ui_create_widget(int x, int y, int width, int height) {
             21);
         clear(layer_ctx, w->contents[2].layer_index);
         circle(layer_ctx, w->contents[2].layer_index, 6, 6, 6, 0xF4BF50);
-        w->contents[2].bandFunction   = ui_hide;
+        w->contents[2].bandFunction   = ui_move_window;
         w->contents[2].belongWindow   = w;
         w->contents[2].callbackEnable = true;
         w->contents[2].dynamicSize    = false;
@@ -801,5 +852,9 @@ void ui_full_screen(wm_window_t* window) {
 void ui_refresh(wm_window_t* window) {}
 
 void ui_close(wm_window_t* window) {
-    wm_remove_window(window_ctx, window->id);
+    wm_remove_top_window(window_ctx);
+}
+
+void ui_move_window(wm_window_t* window) {
+    wm_move_top_window(window_ctx);
 }
