@@ -486,6 +486,13 @@ int get_top_z_index(layer_ctx_t *ctx) {
 int use_image(layer_ctx_t *ctx, int layer_index, int image_index, float scale) {
     layer_t *layer = &ctx->layers[layer_index];
 
+    int new_width = images[image_index].width * scale;
+    int new_height = images[image_index].height * scale;
+
+    if (layer->width != new_width || layer->height != new_height) {
+        resize(ctx, layer_index, new_width, new_height);
+    }
+
     if (scale >= 2) {
         for (int y = 0; y < images[image_index].height; y++) {
             for (int x = 0; x < images[image_index].width; x++) {
@@ -518,6 +525,57 @@ int use_image(layer_ctx_t *ctx, int layer_index, int image_index, float scale) {
                     (y * 2) * images[image_index].width + (x * 2) + 1;
                 int dst_offset = y * (images[image_index].width / 2) + x;
                 layer->buf[dst_offset] = images[image_index].buf[src_offset];
+            }
+        }
+    }
+    mark_dirty(ctx, layer->pos_x, layer->pos_y, layer->width, layer->height);
+    return 0;
+}
+
+int use_char(layer_ctx_t *ctx, int layer_index, char ch, float scale, pixel_t color) {
+    layer_t *layer = &ctx->layers[layer_index];
+
+    int image_index = RESOURCE_CHAR_A + ch - 'a';
+
+    int new_width = images[image_index].width * scale;
+    int new_height = images[image_index].height * scale;
+
+    if (layer->width != new_width || layer->height != new_height) {
+        resize(ctx, layer_index, new_width, new_height);
+    }
+
+    if (scale >= 2) {
+        for (int y = 0; y < images[image_index].height; y++) {
+            for (int x = 0; x < images[image_index].width; x++) {
+                int offset = y * images[image_index].width + x;
+                rect(
+                    ctx,
+                    layer_index,
+                    x * scale,
+                    y * scale,
+                    scale,
+                    scale,
+                    images[image_index].buf[offset] | (0x00ffffff & color));
+            }
+        }
+    }
+
+    if (scale == 1) {
+        for (int y = 0; y < images[image_index].height; y++) {
+            for (int x = 0; x < images[image_index].width; x++) {
+                int offset         = y * images[image_index].width + x;
+                layer->buf[offset] = images[image_index].buf[offset] | (0x00ffffff & color);
+            }
+        }
+    }
+
+    if (scale - 0.5 < 0.000001) {
+        for (int y = 0; y < images[image_index].height / 2; y++) {
+            for (int x = 0; x < images[image_index].width / 2; x++) {
+                int src_offset =
+                    (y * 2) * images[image_index].width + (x * 2) + 1;
+                int dst_offset = y * (images[image_index].width / 2) + x;
+                layer->buf[dst_offset] = images[image_index].buf[src_offset] | (0x00ffffff & color);
             }
         }
     }

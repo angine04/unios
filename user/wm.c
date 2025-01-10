@@ -335,12 +335,12 @@ void init_desktop(wm_ctx_t* ctx) {
     w->contents[0].height      = DISPLAY_HEIGHT;
     w->contents[0].z_index     = 0;
     w->contents[1].x           = 64;
-    w->contents[1].y           = 32;
+    w->contents[1].y           = 64;
     w->contents[1].width       = DISPLAY_WIDTH;
     w->contents[1].height      = DISPLAY_HEIGHT;
     w->contents[1].z_index     = 0;
     w->contents[2].x           = 64;
-    w->contents[2].y           = 128;
+    w->contents[2].y           = 160;
     w->contents[2].width       = DISPLAY_WIDTH;
     w->contents[2].height      = DISPLAY_HEIGHT;
     w->contents[2].z_index     = 0;

@@ -274,3 +274,14 @@ int rounded_rect(layer_ctx_t *ctx, int layer_index, int x, int y, int width, int
  * @param height The height of the dirty region
  */
 void mark_dirty(layer_ctx_t *ctx, int x, int y, int width, int height);
+
+/*!
+ * @brief Draw a character on a layer
+ * @param ctx The compositor context
+ * @param layer_index The index of the layer
+ * @param ch The character
+ * @param scale The scale factor
+ * @param color The color of the character
+ * @return 0 on success, -1 on failure
+ */
+int use_char(layer_ctx_t *ctx, int layer_index, char ch, float scale, pixel_t color);
