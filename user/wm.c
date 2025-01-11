@@ -1296,7 +1296,9 @@ void start_proc_calculator(wm_window_t* window) {
     ui_create_textbox(260 + BUTTON_TEXT_OFFSET, 480 + BUTTON_TEXT_OFFSET, 60, 60, 49, "9\0", COLOR_GREY, COLOR_WHITE, 1, w);
 
     textbox_id = ui_create_textbox(
-        20, 60, 310, 60, 28, screen_text, COLOR_GREY, COLOR_WHITE, 30, w);
+        20, 100, 310, 60, 28, screen_text, COLOR_GREY, COLOR_WHITE, 30, w);
+
+    ui_create_textbox(20, 36, 310, 60, 28, "calculator", COLOR_TRANSPARENT, COLOR_WHITE, 30, w);
 
     ui_show(w);
 }
@@ -1487,6 +1489,7 @@ void push_calculator_symbol_equal(wm_window_t* window) {
     ui_refresh_textbox(calc_window, textbox_id, screen_text, COLOR_GREY, COLOR_WHITE, 20);
 }
 
+// FIXME: use one function to push all numbers
 void push_calculator_symbol_point(wm_window_t* window) {
     // Check queue length
     int                length  = 0;
