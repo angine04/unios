@@ -984,7 +984,7 @@ wm_window_t* ui_create_widget(int x, int y, int width, int height) {
             w->contents[4].height,
             23);
         clear(layer_ctx, w->contents[4].layer_index);
-        use_text(layer_ctx, w->contents[4].layer_index, "0123 456789. +-*/=", 1, 0xFFFFFF);
+        use_text(layer_ctx, w->contents[4].layer_index, "0123 456789. +-*/=", 0.5, 0xFFFFFF);
         w->contents[4].bandFunction   = NULL;
         w->contents[4].belongWindow   = w;
         w->contents[4].callbackEnable = false;
