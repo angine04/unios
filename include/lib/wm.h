@@ -1,5 +1,5 @@
 /* ******************wm*********************** */
-#define MAX_CONTENTS 40
+#define MAX_CONTENTS 80
 #define CURSOR_Z_INDEX 65535
 #define DESKTOP_Z_INDEX 1
 
@@ -19,6 +19,7 @@ typedef struct wm_window_t wm_window_t;
 typedef struct wm_windowNode wm_windowNode;
 
 struct wm_content_t {
+    int id;
     int x;
     int y;
     int width;
@@ -201,7 +202,7 @@ int ui_create_textbox(int x, int y, int width, int height, int z_index, char *te
 /*************事件处理****************** */
 
 
-void ui_refresh_textbox(wm_window_t* window, int layer_index, char *text, int background_color, int text_color, int font_size);
+int ui_refresh_textbox(wm_window_t* window, int layer_index, char *text, int background_color, int text_color, int font_size);
 
 void ui_show(wm_window_t* window);
 void ui_hide(wm_window_t* window);

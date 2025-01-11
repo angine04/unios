@@ -854,6 +854,7 @@ wm_window_t* ui_create_widget(int x, int y, int width, int height) {
     } else {
         wm_window_t* w = (wm_window_t*)malloc(sizeof(wm_window_t));
         for (int i = 0; i < MAX_CONTENTS; i++) {
+            w->contents[i].id = i;
             w->contents[i].x           = 0;
             w->contents[i].y           = 0;
             w->contents[i].width       = 0;
@@ -1027,7 +1028,6 @@ int ui_create_button(
         width - 4,
         height - 4,
         COLOR_GREY);
-    use_text(layer_ctx, window->contents[free_index].layer_index, text, 1, COLOR_WHITE);
     window->contents[free_index].bandFunction   = callback;
     window->contents[free_index].belongWindow   = window;
     window->contents[free_index].callbackEnable = true;
@@ -1112,21 +1112,37 @@ int ui_create_textbox(
     window->contents[free_index].callbackEnable = false;
     window->contents[free_index].dynamicSize    = true;
     window->layer_count++;
-    return window->contents[free_index].layer_index;
+    return window->contents[free_index].id;
 }
 
 
 
-void ui_refresh_textbox(
+int ui_refresh_textbox(
     wm_window_t* window,
-    int          layer_index,
+    int          textbox_id,
     char*        text,
     int          background_color,
     int          text_color,
     int          font_size) {
 
-    use_text(layer_ctx, layer_index, text, 1, text_color);
+    int layer_index = -1;
+
+    for(int i = 0; i < MAX_CONTENTS; i++){
+        if(window->contents[i].id == textbox_id){
+            layer_index = window->contents[i].layer_index;
+            break;
+        }
+    }
+
+    layer_t old_layer = layer_ctx->layers[layer_index];
+
+    release_layer(layer_ctx, layer_index);
+
+    int new_layer_index = create_layer(layer_ctx, old_layer.pos_x, old_layer.pos_y, old_layer.width, old_layer.height, old_layer.z_index);
+    fill(layer_ctx, new_layer_index, background_color);
+    use_text(layer_ctx, new_layer_index, text, 1, text_color);
     mark_dirty(layer_ctx, window->x, window->y, window->width, window->height);
+    return 0;
 }
 
 void ui_show(wm_window_t* window) {
@@ -1175,46 +1191,94 @@ typedef struct calculator_queue {
 
 calculator_queue* queue       = NULL;
 char*             screen_text = NULL;
-wm_window_t*      window      = NULL;
+
+
+
+
+
+
+
+wm_window_t*      calc_window      = NULL;
 int               textbox_id  = -1;
+
+
 
 void start_proc_calculator(wm_window_t* window) {
     queue          = (calculator_queue*)malloc(sizeof(calculator_queue));
     queue->head    = NULL;
     queue->tail    = NULL;
     screen_text    = (char*)malloc(CALCULATOR_SYMBOL_QUEUE_SIZE * sizeof(char));
-
     screen_text[0] = '0';
     screen_text[1] = '\0';
 
+
+
+
     wm_window_t* w = ui_create_widget(100, 100, 350, 600);
-    window         = w;
-    ui_create_button(20, 160, 60, 60, 10, "AC", push_calculator_symbol_ac, w);
+    calc_window         = w;
+    ui_create_button(20, 160, 60, 60, 10, "AC\0", push_calculator_symbol_ac, w);
+    ui_create_textbox(20, 160, 60, 60, 31, "ac", COLOR_GREY, COLOR_WHITE, 1, w);
+
     ui_create_button(
-        100, 160, 60, 60, 11, "BACK", push_calculator_symbol_backspace, w);
+        100, 160, 60, 60, 11, "BACK\0", push_calculator_symbol_backspace, w);
+    ui_create_textbox(100, 160, 60, 60, 32, "bac\0", COLOR_GREY, COLOR_WHITE, 1, w);
+
     ui_create_button(
-        180, 160, 60, 60, 12, "EQUAL", push_calculator_symbol_equal, w);
+        180, 160, 60, 60, 12, "EQUAL\0", push_calculator_symbol_equal, w);
+    ui_create_textbox(180, 160, 60, 60, 33, "=\0", COLOR_GREY, COLOR_WHITE, 1, w);
+
     ui_create_button(
-        260, 160, 60, 60, 13, ".", push_calculator_symbol_point, w);
+        260, 160, 60, 60, 13, ".\0", push_calculator_symbol_point, w);
+    ui_create_textbox(260, 160, 60, 60, 34, ".\0", COLOR_GREY, COLOR_WHITE, 1, w);
+
     ui_create_button(
-        20, 240, 60, 60, 14, "/", push_calculator_symbol_divide, w);
+        20, 240, 60, 60, 14, "/\0", push_calculator_symbol_divide, w);
+    ui_create_textbox(20, 240, 60, 60, 35, "/\0", COLOR_GREY, COLOR_WHITE, 1, w);
+
     ui_create_button(
-        100, 240, 60, 60, 15, "*", push_calculator_symbol_multiply, w);
+        100, 240, 60, 60, 15, "*\0", push_calculator_symbol_multiply, w);
+    ui_create_textbox(100, 240, 60, 60, 36, "*\0", COLOR_GREY, COLOR_WHITE, 1, w);
+
     ui_create_button(
-        180, 240, 60, 60, 16, "-", push_calculator_symbol_minus, w);
-    ui_create_button(260, 240, 60, 60, 17, "+", push_calculator_symbol_plus, w);
-    ui_create_button(20, 320, 60, 60, 18, "0", push_calculator_symbol_0, w);
-    ui_create_button(100, 320, 60, 60, 19, "1", push_calculator_symbol_1, w);
-    ui_create_button(180, 320, 60, 60, 20, "2", push_calculator_symbol_2, w);
-    ui_create_button(260, 320, 60, 60, 21, "3", push_calculator_symbol_3, w);
-    ui_create_button(20, 400, 60, 60, 22, "4", push_calculator_symbol_4, w);
-    ui_create_button(100, 400, 60, 60, 23, "5", push_calculator_symbol_5, w);
-    ui_create_button(180, 400, 60, 60, 24, "6", push_calculator_symbol_6, w);
-    ui_create_button(260, 400, 60, 60, 25, "7", push_calculator_symbol_7, w);
-    ui_create_button(20, 480, 60, 60, 26, "8", push_calculator_symbol_8, w);
-    ui_create_button(260, 480, 60, 60, 27, "9", push_calculator_symbol_9, w);
+        180, 240, 60, 60, 16, "-\0", push_calculator_symbol_minus, w);
+    ui_create_textbox(180, 240, 60, 60, 38, "-\0", COLOR_GREY, COLOR_WHITE, 1, w);
+
+    ui_create_button(260, 240, 60, 60, 17, "+\0", push_calculator_symbol_plus, w);
+    ui_create_textbox(260, 240, 60, 60, 39, "+\0", COLOR_GREY, COLOR_WHITE, 1, w);
+
+    ui_create_button(20, 320, 60, 60, 18, "0\0", push_calculator_symbol_0, w);
+    ui_create_textbox(20, 320, 60, 60, 40, "0\0", COLOR_GREY, COLOR_WHITE, 1, w);
+
+    ui_create_button(100, 320, 60, 60, 19, "1\0", push_calculator_symbol_1, w);
+    ui_create_textbox(100, 320, 60, 60, 41, "1\0", COLOR_GREY, COLOR_WHITE, 1, w);
+
+    ui_create_button(180, 320, 60, 60, 20, "2\0", push_calculator_symbol_2, w);
+    ui_create_textbox(180, 320, 60, 60, 42, "2\0", COLOR_GREY, COLOR_WHITE, 1, w);
+
+    ui_create_button(260, 320, 60, 60, 21, "3\0", push_calculator_symbol_3, w);
+    ui_create_textbox(260, 320, 60, 60, 43, "3\0", COLOR_GREY, COLOR_WHITE, 1, w);
+
+    ui_create_button(20, 400, 60, 60, 22, "4\0", push_calculator_symbol_4, w);
+    ui_create_textbox(20, 400, 60, 60, 44, "4\0", COLOR_GREY, COLOR_WHITE, 1, w);
+
+    ui_create_button(100, 400, 60, 60, 23, "5\0", push_calculator_symbol_5, w);
+    ui_create_textbox(100, 400, 60, 60, 45, "5\0", COLOR_GREY, COLOR_WHITE, 1, w);
+
+    ui_create_button(180, 400, 60, 60, 24, "6\0", push_calculator_symbol_6, w);
+    ui_create_textbox(180, 400, 60, 60, 46, "6\0", COLOR_GREY, COLOR_WHITE, 1, w);
+
+    ui_create_button(260, 400, 60, 60, 25, "7\0", push_calculator_symbol_7, w);
+    ui_create_textbox(260, 400, 60, 60, 47, "7\0", COLOR_GREY, COLOR_WHITE, 1, w);
+
+    ui_create_button(20, 480, 60, 60, 26, "8\0", push_calculator_symbol_8, w);
+    ui_create_textbox(20, 480, 60, 60, 48, "8\0", COLOR_GREY, COLOR_WHITE, 1, w);
+
+    ui_create_button(260, 480, 60, 60, 27, "9\0", push_calculator_symbol_9, w);
+    ui_create_textbox(260, 480, 60, 60, 49, "9\0", COLOR_GREY, COLOR_WHITE, 1, w);
+
     textbox_id = ui_create_textbox(
         20, 60, 310, 60, 28, screen_text, COLOR_GREY, COLOR_WHITE, 30, w);
+
     ui_show(w);
 }
 
@@ -1246,8 +1310,8 @@ void refresh_calculator_screen() {
         screen_text[i] = '\0';
     }
 
-    ui_refresh_textbox(
-        window, textbox_id, screen_text, COLOR_GREY, COLOR_WHITE, 20);
+
+    ui_refresh_textbox(calc_window, textbox_id, screen_text, COLOR_GREY, COLOR_WHITE, 20);
 }
 
 void push_calculator_symbol_ac(wm_window_t* window) {

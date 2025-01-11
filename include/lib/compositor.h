@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <graphics.h>
 #include <assets.h>
-#define LAYER_MAX_NUM 100
+#define LAYER_MAX_NUM 200
 
 /*!
  * @brief Layer structure
