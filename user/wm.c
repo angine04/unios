@@ -1759,7 +1759,7 @@ void push_calculator_symbol_9(wm_window_t* window) {
 
 // proc sysinfo
 void start_proc_sysinfo(wm_window_t* window) {
-    wm_window_t* w             = ui_create_widget(100, 100, 400, 500);
+    wm_window_t* w             = ui_create_widget(100, 100, 320, 370);
     w->contents[4].x           = 36;
     w->contents[4].y           = 36;
     w->contents[4].width       = 100;
@@ -1780,7 +1780,7 @@ void start_proc_sysinfo(wm_window_t* window) {
     w->contents[4].dynamicSize    = false;
 
     w->contents[5].x           = 36;
-    w->contents[5].y           = 92;
+    w->contents[5].y           = 102;
     w->contents[5].width       = 100;
     w->contents[5].height      = 100;
     w->contents[5].z_index     = 23;
@@ -1799,7 +1799,7 @@ void start_proc_sysinfo(wm_window_t* window) {
     w->contents[5].dynamicSize    = false;
 
     w->contents[6].x           = 36;
-    w->contents[6].y           = 116;
+    w->contents[6].y           = 126;
     w->contents[6].width       = 195;
     w->contents[6].height      = 40;
     w->contents[6].z_index     = 23;
@@ -1818,7 +1818,7 @@ void start_proc_sysinfo(wm_window_t* window) {
     w->contents[6].dynamicSize    = false;
 
     w->contents[7].x           = 36;
-    w->contents[7].y           = 180;
+    w->contents[7].y           = 200;
     w->contents[7].width       = 195;
     w->contents[7].height      = 40;
     w->contents[7].z_index     = 23;
@@ -1837,8 +1837,8 @@ void start_proc_sysinfo(wm_window_t* window) {
     w->contents[7].dynamicSize    = false;
 
     w->contents[8].x           = 36;
-    w->contents[8].y           = 200;
-    w->contents[8].width       = 230;
+    w->contents[8].y           = 220;
+    w->contents[8].width       = 240;
     w->contents[8].height      = 36;
     w->contents[8].z_index     = 23;
     w->contents[8].layer_index = create_layer(
@@ -1856,7 +1856,7 @@ void start_proc_sysinfo(wm_window_t* window) {
     w->contents[8].dynamicSize    = false;
 
     w->contents[9].x           = 36;
-    w->contents[9].y           = 240;
+    w->contents[9].y           = 266;
     w->contents[9].width       = 195;
     w->contents[9].height      = 40;
     w->contents[9].z_index     = 23;
@@ -1873,5 +1873,24 @@ void start_proc_sysinfo(wm_window_t* window) {
     w->contents[9].belongWindow   = w;
     w->contents[9].callbackEnable = false;
     w->contents[9].dynamicSize    = false;
+
+    w->contents[10].x           = 36;
+    w->contents[10].y           = 288;
+    w->contents[10].width       = 195;
+    w->contents[10].height      = 40;
+    w->contents[10].z_index     = 23;
+    w->contents[10].layer_index = create_layer(
+        layer_ctx,
+        w->contents[10].x,
+        w->contents[10].y,
+        w->contents[10].width,
+        w->contents[10].height,
+        30);
+    clear(layer_ctx, w->contents[10].layer_index);
+    use_text(layer_ctx, w->contents[10].layer_index, "by   cxlyq   and   angine04", 0.5, 0xFFFFFF);
+    w->contents[10].bandFunction   = NULL;
+    w->contents[10].belongWindow   = w;
+    w->contents[10].callbackEnable = false;
+    w->contents[10].dynamicSize    = false;
     ui_show(w);
 }
