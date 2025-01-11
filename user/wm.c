@@ -1105,13 +1105,8 @@ int ui_create_textbox(
     window->contents[free_index].layer_index =
         create_layer(layer_ctx, x, y, width, height, z_index);
     fill(layer_ctx, window->contents[free_index].layer_index, background_color);
-<<<<<<< HEAD
-
     use_text(layer_ctx, window->contents[free_index].layer_index, text, 1, text_color);
-=======
-    // TODO: text(layer_ctx, window->contents[free_index].layer_index, text,
-    // text_color, font_size);
->>>>>>> dev
+
     window->contents[free_index].bandFunction   = NULL;
     window->contents[free_index].belongWindow   = window;
     window->contents[free_index].callbackEnable = false;
@@ -1120,11 +1115,8 @@ int ui_create_textbox(
     return window->contents[free_index].layer_index;
 }
 
-<<<<<<< HEAD
 
 
-=======
->>>>>>> dev
 void ui_refresh_textbox(
     wm_window_t* window,
     int          layer_index,
@@ -1132,13 +1124,9 @@ void ui_refresh_textbox(
     int          background_color,
     int          text_color,
     int          font_size) {
-<<<<<<< HEAD
+
     use_text(layer_ctx, layer_index, text, 1, text_color);
     mark_dirty(layer_ctx, window->x, window->y, window->width, window->height);
-=======
-    // TODO: text(layer_ctx, window->contents[free_index].layer_index, text,
-    // text_color, font_size);
->>>>>>> dev
 }
 
 void ui_show(wm_window_t* window) {
@@ -1195,11 +1183,10 @@ void start_proc_calculator(wm_window_t* window) {
     queue->head    = NULL;
     queue->tail    = NULL;
     screen_text    = (char*)malloc(CALCULATOR_SYMBOL_QUEUE_SIZE * sizeof(char));
-<<<<<<< HEAD
+
     screen_text[0] = '0';
     screen_text[1] = '\0';
-=======
->>>>>>> dev
+
     wm_window_t* w = ui_create_widget(100, 100, 350, 600);
     window         = w;
     ui_create_button(20, 160, 60, 60, 10, "AC", push_calculator_symbol_ac, w);
@@ -1227,11 +1214,7 @@ void start_proc_calculator(wm_window_t* window) {
     ui_create_button(20, 480, 60, 60, 26, "8", push_calculator_symbol_8, w);
     ui_create_button(260, 480, 60, 60, 27, "9", push_calculator_symbol_9, w);
     textbox_id = ui_create_textbox(
-<<<<<<< HEAD
         20, 60, 310, 60, 28, screen_text, COLOR_GREY, COLOR_WHITE, 30, w);
-=======
-        20, 60, 310, 60, 28, screen_text, COLOR_GREY, COLOR_WHITE, 20, w);
->>>>>>> dev
     ui_show(w);
 }
 
