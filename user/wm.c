@@ -1222,7 +1222,25 @@ void start_proc_calculator(wm_window_t* window) {
 
     ui_create_button(
         100, 160, 60, 60, 11, "BACK\0", push_calculator_symbol_backspace, w);
-    ui_create_textbox(100 + 10, 160 + BUTTON_TEXT_OFFSET, 60, 60, 32, "bac\0", COLOR_GREY, COLOR_WHITE, 1, w);
+    //ui_create_textbox(100 + 10, 160 + BUTTON_TEXT_OFFSET, 60, 60, 32, "bac\0", COLOR_GREY, COLOR_WHITE, 1, w);
+    w->contents[70].x           = 110;
+    w->contents[70].y           = 180;
+    w->contents[70].width       = 32;
+    w->contents[70].height      = 32;
+    w->contents[70].z_index     = 200;
+    w->contents[70].layer_index = create_layer(
+        layer_ctx,
+        w->contents[70].x,
+        w->contents[70].y,
+        w->contents[70].width,
+        w->contents[70].height,
+        200);
+    clear(layer_ctx, w->contents[70].layer_index);
+    use_image(layer_ctx, w->contents[70].layer_index, RESOURCE_ICON_BACKSPACE, 0.5);
+    w->contents[70].bandFunction   = NULL;
+    w->contents[70].belongWindow   = w;
+    w->contents[70].callbackEnable = false;
+    w->contents[70].dynamicSize    = false;
 
     ui_create_button(
         180, 160, 60, 60, 12, "EQUAL\0", push_calculator_symbol_equal, w);

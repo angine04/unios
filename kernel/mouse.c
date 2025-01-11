@@ -114,6 +114,6 @@ uint32_t do_readmouse() {
     // 13-0: y, 14 bits
 
     int ret = (buttons << 28) | (x << 14) | y;
-    kdebug("readmouse: %32b\n", ret);
+    //kdebug("readmouse: %32b\n", ret);
     return ret;
 }
