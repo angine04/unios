@@ -10,7 +10,7 @@
 #include <lib/assets/icon_cursor.res.h>
 #include <lib/assets/image_letters.res.h>
 #include <lib/assets/icon_calc.res.h>
-
+#include <lib/assets/icon_backspace.res.h>
 #include <lib/assets/char_a.res.h>
 #include <lib/assets/char_b.res.h>
 #include <lib/assets/char_c.res.h>
@@ -105,4 +105,5 @@ const image_t images[] = {
     {(pixel_t *)char_divided, 16, 32, true},
     {(pixel_t *)char_equal, 16, 32, true},
     {(pixel_t *)char_whitespace, 4, 32, true},
+    {(pixel_t *)icon_backspace, 64, 64, true},
 };

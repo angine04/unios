@@ -973,7 +973,7 @@ wm_window_t* ui_create_widget(int x, int y, int width, int height) {
 
         w->contents[4].x           = 24;
         w->contents[4].y           = 24;
-        w->contents[4].width       = 113;
+        w->contents[4].width       = 32;
         w->contents[4].height      = 32;
         w->contents[4].z_index     = 23;
         w->contents[4].layer_index = create_layer(
@@ -984,7 +984,7 @@ wm_window_t* ui_create_widget(int x, int y, int width, int height) {
             w->contents[4].height,
             23);
         clear(layer_ctx, w->contents[4].layer_index);
-        use_text(layer_ctx, w->contents[4].layer_index, "0123 456789. +-*/=", 0.5, 0xFFFFFF);
+        use_image(layer_ctx, w->contents[4].layer_index, RESOURCE_ICON_BACKSPACE, 0.5);
         w->contents[4].bandFunction   = NULL;
         w->contents[4].belongWindow   = w;
         w->contents[4].callbackEnable = false;

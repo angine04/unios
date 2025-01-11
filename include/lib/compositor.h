@@ -203,7 +203,7 @@ int get_top_z_index(layer_ctx_t *ctx);
  * @param ctx The compositor context
  * @param layer_index The index of the layer
  * @param image_index The index of the image
- * @param scale The scale factor
+ * @param scale The scale factor, possible value: 0.5, 1, 2
  * @return 0 on success, -1 on failure
  */
 int use_image(layer_ctx_t *ctx, int layer_index, int image_index, float scale);
@@ -280,7 +280,7 @@ void mark_dirty(layer_ctx_t *ctx, int x, int y, int width, int height);
  * @param ctx The compositor context
  * @param layer_index The index of the layer
  * @param ch The character
- * @param scale The scale factor
+ * @param scale The scale factor, possible value: 0.5, 1, 2
  * @param color The color of the character
  * @return 0 on success, -1 on failure
  */
@@ -291,7 +291,7 @@ int use_char(layer_ctx_t *ctx, int layer_index, char ch, float scale, pixel_t co
  * @param ctx The compositor context
  * @param layer_index The index of the layer
  * @param text The text to draw
- * @param scale The scale factor
+ * @param scale The scale factor, possible value: 0.5, 1, 2
  * @param color The color of the text
  * @return 0 on success, -1 on failure
  */
