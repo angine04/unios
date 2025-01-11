@@ -1169,7 +1169,7 @@ void ui_move_window(wm_window_t* window) {
 
 /*************USER PROC*********************** */
 // proc calculator
-#define CALCULATOR_SYMBOL_QUEUE_SIZE 10
+#define CALCULATOR_SYMBOL_QUEUE_SIZE 18
 #define CALCULATOR_SYMBOL_AC         11
 #define CALCULATOR_SYMBOL_BACKSPACE  12
 #define CALCULATOR_SYMBOL_EQUAL      13
@@ -1178,6 +1178,7 @@ void ui_move_window(wm_window_t* window) {
 #define CALCULATOR_SYMBOL_MULTIPLY   16
 #define CALCULATOR_SYMBOL_MINUS      17
 #define CALCULATOR_SYMBOL_PLUS       18
+#define BUTTON_TEXT_OFFSET 20
 
 typedef struct calculator_symbol {
     struct calculator_symbol* next;
@@ -1217,64 +1218,64 @@ void start_proc_calculator(wm_window_t* window) {
     wm_window_t* w = ui_create_widget(100, 100, 350, 600);
     calc_window         = w;
     ui_create_button(20, 160, 60, 60, 10, "AC\0", push_calculator_symbol_ac, w);
-    ui_create_textbox(20, 160, 60, 60, 31, "ac", COLOR_GREY, COLOR_WHITE, 1, w);
+    ui_create_textbox(20 + 10 , 160 + BUTTON_TEXT_OFFSET, 60, 60, 31, "ac", COLOR_GREY, COLOR_WHITE, 1, w);
 
     ui_create_button(
         100, 160, 60, 60, 11, "BACK\0", push_calculator_symbol_backspace, w);
-    ui_create_textbox(100, 160, 60, 60, 32, "bac\0", COLOR_GREY, COLOR_WHITE, 1, w);
+    ui_create_textbox(100 + 10, 160 + BUTTON_TEXT_OFFSET, 60, 60, 32, "bac\0", COLOR_GREY, COLOR_WHITE, 1, w);
 
     ui_create_button(
         180, 160, 60, 60, 12, "EQUAL\0", push_calculator_symbol_equal, w);
-    ui_create_textbox(180, 160, 60, 60, 33, "=\0", COLOR_GREY, COLOR_WHITE, 1, w);
+    ui_create_textbox(180 + BUTTON_TEXT_OFFSET, 160 + BUTTON_TEXT_OFFSET, 60, 60, 33, "=\0", COLOR_GREY, COLOR_WHITE, 1, w);
 
     ui_create_button(
         260, 160, 60, 60, 13, ".\0", push_calculator_symbol_point, w);
-    ui_create_textbox(260, 160, 60, 60, 34, ".\0", COLOR_GREY, COLOR_WHITE, 1, w);
+    ui_create_textbox(260 + BUTTON_TEXT_OFFSET, 160 + BUTTON_TEXT_OFFSET, 60, 60, 34, ".\0", COLOR_GREY, COLOR_WHITE, 1, w);
 
     ui_create_button(
         20, 240, 60, 60, 14, "/\0", push_calculator_symbol_divide, w);
-    ui_create_textbox(20, 240, 60, 60, 35, "/\0", COLOR_GREY, COLOR_WHITE, 1, w);
+    ui_create_textbox(20 + BUTTON_TEXT_OFFSET, 240 + BUTTON_TEXT_OFFSET, 60, 60, 35, "/\0", COLOR_GREY, COLOR_WHITE, 1, w);
 
     ui_create_button(
         100, 240, 60, 60, 15, "*\0", push_calculator_symbol_multiply, w);
-    ui_create_textbox(100, 240, 60, 60, 36, "*\0", COLOR_GREY, COLOR_WHITE, 1, w);
+    ui_create_textbox(100 + BUTTON_TEXT_OFFSET, 240 + BUTTON_TEXT_OFFSET, 60, 60, 36, "*\0", COLOR_GREY, COLOR_WHITE, 1, w);
 
     ui_create_button(
         180, 240, 60, 60, 16, "-\0", push_calculator_symbol_minus, w);
-    ui_create_textbox(180, 240, 60, 60, 38, "-\0", COLOR_GREY, COLOR_WHITE, 1, w);
+    ui_create_textbox(180 + BUTTON_TEXT_OFFSET, 240 + BUTTON_TEXT_OFFSET, 60, 60, 38, "-\0", COLOR_GREY, COLOR_WHITE, 1, w);
 
     ui_create_button(260, 240, 60, 60, 17, "+\0", push_calculator_symbol_plus, w);
-    ui_create_textbox(260, 240, 60, 60, 39, "+\0", COLOR_GREY, COLOR_WHITE, 1, w);
+    ui_create_textbox(260 + BUTTON_TEXT_OFFSET, 240 + BUTTON_TEXT_OFFSET, 60, 60, 39, "+\0", COLOR_GREY, COLOR_WHITE, 1, w);
 
     ui_create_button(20, 320, 60, 60, 18, "0\0", push_calculator_symbol_0, w);
-    ui_create_textbox(20, 320, 60, 60, 40, "0\0", COLOR_GREY, COLOR_WHITE, 1, w);
+    ui_create_textbox(20 + BUTTON_TEXT_OFFSET, 320 + BUTTON_TEXT_OFFSET, 60, 60, 40, "0\0", COLOR_GREY, COLOR_WHITE, 1, w);
 
     ui_create_button(100, 320, 60, 60, 19, "1\0", push_calculator_symbol_1, w);
-    ui_create_textbox(100, 320, 60, 60, 41, "1\0", COLOR_GREY, COLOR_WHITE, 1, w);
+    ui_create_textbox(100 + BUTTON_TEXT_OFFSET, 320 + BUTTON_TEXT_OFFSET, 60, 60, 41, "1\0", COLOR_GREY, COLOR_WHITE, 1, w);
 
     ui_create_button(180, 320, 60, 60, 20, "2\0", push_calculator_symbol_2, w);
-    ui_create_textbox(180, 320, 60, 60, 42, "2\0", COLOR_GREY, COLOR_WHITE, 1, w);
+    ui_create_textbox(180 + BUTTON_TEXT_OFFSET, 320 + BUTTON_TEXT_OFFSET, 60, 60, 42, "2\0", COLOR_GREY, COLOR_WHITE, 1, w);
 
     ui_create_button(260, 320, 60, 60, 21, "3\0", push_calculator_symbol_3, w);
-    ui_create_textbox(260, 320, 60, 60, 43, "3\0", COLOR_GREY, COLOR_WHITE, 1, w);
+    ui_create_textbox(260 + BUTTON_TEXT_OFFSET, 320 + BUTTON_TEXT_OFFSET, 60, 60, 43, "3\0", COLOR_GREY, COLOR_WHITE, 1, w);
 
     ui_create_button(20, 400, 60, 60, 22, "4\0", push_calculator_symbol_4, w);
-    ui_create_textbox(20, 400, 60, 60, 44, "4\0", COLOR_GREY, COLOR_WHITE, 1, w);
+    ui_create_textbox(20 + BUTTON_TEXT_OFFSET, 400 + BUTTON_TEXT_OFFSET, 60, 60, 44, "4\0", COLOR_GREY, COLOR_WHITE, 1, w);
 
     ui_create_button(100, 400, 60, 60, 23, "5\0", push_calculator_symbol_5, w);
-    ui_create_textbox(100, 400, 60, 60, 45, "5\0", COLOR_GREY, COLOR_WHITE, 1, w);
+    ui_create_textbox(100 + BUTTON_TEXT_OFFSET, 400 + BUTTON_TEXT_OFFSET, 60, 60, 45, "5\0", COLOR_GREY, COLOR_WHITE, 1, w);
 
     ui_create_button(180, 400, 60, 60, 24, "6\0", push_calculator_symbol_6, w);
-    ui_create_textbox(180, 400, 60, 60, 46, "6\0", COLOR_GREY, COLOR_WHITE, 1, w);
+    ui_create_textbox(180 + BUTTON_TEXT_OFFSET, 400 + BUTTON_TEXT_OFFSET, 60, 60, 46, "6\0", COLOR_GREY, COLOR_WHITE, 1, w);
 
     ui_create_button(260, 400, 60, 60, 25, "7\0", push_calculator_symbol_7, w);
-    ui_create_textbox(260, 400, 60, 60, 47, "7\0", COLOR_GREY, COLOR_WHITE, 1, w);
+    ui_create_textbox(260 + BUTTON_TEXT_OFFSET, 400 + BUTTON_TEXT_OFFSET, 60, 60, 47, "7\0", COLOR_GREY, COLOR_WHITE, 1, w);
 
     ui_create_button(20, 480, 60, 60, 26, "8\0", push_calculator_symbol_8, w);
-    ui_create_textbox(20, 480, 60, 60, 48, "8\0", COLOR_GREY, COLOR_WHITE, 1, w);
+    ui_create_textbox(20 + BUTTON_TEXT_OFFSET, 480 + BUTTON_TEXT_OFFSET, 60, 60, 48, "8\0", COLOR_GREY, COLOR_WHITE, 1, w);
 
     ui_create_button(260, 480, 60, 60, 27, "9\0", push_calculator_symbol_9, w);
-    ui_create_textbox(260, 480, 60, 60, 49, "9\0", COLOR_GREY, COLOR_WHITE, 1, w);
+    ui_create_textbox(260 + BUTTON_TEXT_OFFSET, 480 + BUTTON_TEXT_OFFSET, 60, 60, 49, "9\0", COLOR_GREY, COLOR_WHITE, 1, w);
 
     textbox_id = ui_create_textbox(
         20, 60, 310, 60, 28, screen_text, COLOR_GREY, COLOR_WHITE, 30, w);
@@ -1360,13 +1361,11 @@ void push_calculator_symbol_backspace(wm_window_t* window) {
 }
 
 void push_calculator_symbol_equal(wm_window_t* window) {
-    if (queue->head == NULL) {
-        screen_text[0] = '0';
-        screen_text[1] = '\0';
-        return;
-    }
 
     // Parse expression and calculate result
+    for(int i = 0; i < CALCULATOR_SYMBOL_QUEUE_SIZE; i++){
+        screen_text[i] = '\0';
+    }
     double             result           = 0;
     double             current_num      = 0;
     int                current_operator = CALCULATOR_SYMBOL_PLUS;
@@ -1466,7 +1465,8 @@ void push_calculator_symbol_equal(wm_window_t* window) {
             decimal_places++;
         }
     }
-    refresh_calculator_screen();
+    screen_text[CALCULATOR_SYMBOL_QUEUE_SIZE - 1] = '\0';
+    ui_refresh_textbox(calc_window, textbox_id, screen_text, COLOR_GREY, COLOR_WHITE, 20);
 }
 
 void push_calculator_symbol_point(wm_window_t* window) {
