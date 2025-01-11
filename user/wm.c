@@ -916,6 +916,7 @@ int ui_create_button(
         width - 4,
         height - 4,
         COLOR_GREY);
+    use_text(layer_ctx, window->contents[free_index].layer_index, text, 1, COLOR_WHITE);
     window->contents[free_index].bandFunction   = callback;
     window->contents[free_index].belongWindow   = window;
     window->contents[free_index].callbackEnable = true;
