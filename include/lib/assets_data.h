@@ -37,8 +37,23 @@
 #include <lib/assets/char_x.res.h>
 #include <lib/assets/char_y.res.h>
 #include <lib/assets/char_z.res.h>
-
-
+#include <lib/assets/char_0.res.h>
+#include <lib/assets/char_1.res.h>
+#include <lib/assets/char_2.res.h>
+#include <lib/assets/char_3.res.h>
+#include <lib/assets/char_4.res.h>
+#include <lib/assets/char_5.res.h>
+#include <lib/assets/char_6.res.h>
+#include <lib/assets/char_7.res.h>
+#include <lib/assets/char_8.res.h>
+#include <lib/assets/char_9.res.h>
+#include <lib/assets/char_period.res.h>
+#include <lib/assets/char_plus.res.h>
+#include <lib/assets/char_minus.res.h>
+#include <lib/assets/char_times.res.h>
+#include <lib/assets/char_divided.res.h>
+#include <lib/assets/char_equal.res.h>
+#include <lib/assets/char_whitespace.res.h>
 
 const image_t images[] = {
     {(pixel_t *)icon_unios, 64, 64, true},
@@ -73,4 +88,21 @@ const image_t images[] = {
     {(pixel_t *)char_x, 16, 32, true},
     {(pixel_t *)char_y, 18, 32, true},
     {(pixel_t *)char_z, 14, 32, true},
+    {(pixel_t *)char_0, 14, 32, true},
+    {(pixel_t *)char_1, 16, 32, true},
+    {(pixel_t *)char_2, 16, 32, true},
+    {(pixel_t *)char_3, 18, 32, true},
+    {(pixel_t *)char_4, 16, 32, true},
+    {(pixel_t *)char_5, 16, 32, true},
+    {(pixel_t *)char_6, 14, 32, true},
+    {(pixel_t *)char_7, 16, 32, true},
+    {(pixel_t *)char_8, 16, 32, true},
+    {(pixel_t *)char_9, 18, 32, true},
+    {(pixel_t *)char_period, 8, 32, true},
+    {(pixel_t *)char_plus, 16, 32, true},
+    {(pixel_t *)char_minus, 12, 32, true},
+    {(pixel_t *)char_times, 14, 32, true},
+    {(pixel_t *)char_divided, 16, 32, true},
+    {(pixel_t *)char_equal, 16, 32, true},
+    {(pixel_t *)char_whitespace, 4, 32, true},
 };
