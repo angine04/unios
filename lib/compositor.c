@@ -15,6 +15,631 @@
 
 static pixel_t screen_vram[DISPLAY_WIDTH * DISPLAY_HEIGHT] = {0};
 
+// for rounded rect acceleration
+pixel_t corner_pattern_left_top[11][11] = {
+    {0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000, 0xee383838,
+     0x95383838, 0x4c383838,
+     0x1e383838, 0x06383838},
+    {0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000, 0xf7383838,
+     0x86383838, 0x10383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+    {0xff000000,
+     0xff000000, 0xff000000,
+     0xdf383838, 0x2c383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+    {0xff000000,
+     0xff000000, 0xe3383838,
+     0x1c383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+    {0xff000000,
+     0xf7383838, 0x35383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+    {0xff000000,
+     0x87383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+    {0xed383838,
+     0x0f383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+    {0x94383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+    {0x4d383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+    {0x1d383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+    {0x06383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+};
+
+pixel_t corner_pattern_right_top[11][11] = {
+    {0x0c383838,
+     0x28383838, 0x4c383838,
+     0x95383838, 0xee383838,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x10383838,
+     0x85383838, 0xf6383838,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x2c383838,
+     0xdf383838, 0xff000000,
+     0xff000000, 0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x1c383838, 0xe3383838,
+     0xff000000, 0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x35383838,
+     0xf6383838, 0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x86383838, 0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x0f383838, 0xed383838},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x94383838},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x4c383838},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x1d383838},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x06383838},
+};
+
+pixel_t corner_pattern_left_bottom[11][11] = {
+    {0x0d383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+    {0x26383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+    {0x4d383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+    {0x94383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+    {0xed383838,
+     0x0f383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+    {0xff000000,
+     0x86383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+    {0xff000000,
+     0xf6383838, 0x2d383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+    {0xff000000,
+     0xff000000, 0xdb383838,
+     0x1a383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+    {0xff000000,
+     0xff000000, 0xff000000,
+     0xde383838, 0x2c383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+    {0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000, 0xf6383838,
+     0x85383838, 0x10383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838},
+    {0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000, 0xee383838,
+     0x94383838, 0x4c383838,
+     0x1e383838, 0x05383838},
+};
+
+pixel_t corner_pattern_right_bottom[11][11] = {
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x06383838},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x1d383838},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x4c383838},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x94383838},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x0f383838, 0xed383838},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x86383838, 0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x2c383838,
+     0xf6383838, 0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x1b383838, 0xdb383838,
+     0xff000000, 0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x2c383838,
+     0xdf383838, 0xff000000,
+     0xff000000, 0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x10383838,
+     0x85383838, 0xf6383838,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000},
+    {0x05383838,
+     0x1e383838, 0x4c383838,
+     0x94383838, 0xee383838,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000},
+};
+
+pixel_t corner_with_border_left_top[12][12] = {
+    {0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000,
+     0xe1808080, 0x87808080,
+     0x46808080, 0x1c808080,
+     0x07808080},
+    {0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000,
+     0xe1808080, 0x59808080,
+     0x037b7b7b, 0x00626262,
+     0x004d4d4d, 0x00404040,
+     0x003a3a3a},
+    {0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000, 0xb1808080,
+     0x0d7e7e7e, 0x005e5e5e,
+     0x003d3d3d, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+    {0xff000000,
+     0xff000000, 0xff000000,
+     0x90808080, 0x02777777,
+     0x00444444, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+    {0xff000000,
+     0xff000000, 0xa8808080,
+     0x01787878, 0x00404040,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+    {0xff000000,
+     0xe1808080, 0x0c7e7e7e,
+     0x00474747, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+    {0xff000000,
+     0x5a808080, 0x005e5e5e,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+    {0xe0808080,
+     0x027b7b7b, 0x003c3c3c,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+    {0x88808080,
+     0x00626262, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+    {0x47808080,
+     0x004e4e4e, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+    {0x1b808080,
+     0x00404040, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+    {0x07808080,
+     0x003a3a3a, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+};
+
+pixel_t corner_with_border_left_bottom[12][12] = {
+    {0x0c808080,
+     0x28808080, 0x47808080,
+     0x87808080, 0xde808080,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000},
+    {0x003b3b3b,
+     0x00434343, 0x004d4d4d,
+     0x00626262, 0x027b7b7b,
+     0x59808080, 0xe1808080,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x003d3d3d,
+     0x005e5e5e, 0x0c7d7d7d,
+     0xa6808080, 0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00444444,
+     0x01777777, 0x8e808080,
+     0xff000000, 0xff000000,
+     0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00404040, 0x01787878,
+     0xa8808080, 0xff000000,
+     0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00474747,
+     0x0c7d7d7d, 0xe1808080,
+     0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x005e5e5e, 0x58808080,
+     0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x003c3c3c, 0x027b7b7b,
+     0xe0808080},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00626262,
+     0x88808080},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x004d4d4d,
+     0x47808080},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00404040,
+     0x1b808080},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x003a3a3a,
+     0x06808080},
+};
+
+pixel_t corner_with_border_right_top[12][12] = {
+    {0x07808080,
+     0x003c3c3c, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+    {0x1b808080,
+     0x00434343, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+    {0x46808080,
+     0x004e4e4e, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+    {0x88808080,
+     0x00626262, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+    {0xdf808080,
+     0x027b7b7b, 0x003c3c3c,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+    {0xff000000,
+     0x58808080, 0x005e5e5e,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+    {0xff000000,
+     0xe1808080, 0x0c7d7d7d,
+     0x00454545, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+    {0xff000000,
+     0xff000000, 0xa7808080,
+     0x01767676, 0x003f3f3f,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+    {0xff000000,
+     0xff000000, 0xff000000,
+     0x90808080, 0x02777777,
+     0x00444444, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+    {0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000, 0xb1808080,
+     0x0d7d7d7d, 0x005e5e5e,
+     0x003d3d3d, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838},
+    {0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000,
+     0xe1808080, 0x58808080,
+     0x027b7b7b, 0x00626262,
+     0x004d4d4d, 0x00404040,
+     0x00393939},
+    {0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000,
+     0xe1808080, 0x87808080,
+     0x46808080, 0x1b808080,
+     0x05808080},
+};
+
+pixel_t corner_with_border_right_bottom[12][12] = {
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x003a3a3a,
+     0x06808080},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00404040,
+     0x1b808080},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x004d4d4d,
+     0x47808080},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00626262,
+     0x88808080},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x003c3c3c, 0x027b7b7b,
+     0xdf808080},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x005e5e5e, 0x58808080,
+     0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00444444,
+     0x0c7d7d7d, 0xe1808080,
+     0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00404040, 0x01767676,
+     0xa7808080, 0xff000000,
+     0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x00444444,
+     0x01777777, 0x8c808080,
+     0xff000000, 0xff000000,
+     0xff000000},
+    {0x00383838,
+     0x00383838, 0x00383838,
+     0x00383838, 0x003d3d3d,
+     0x005e5e5e, 0x0c7d7d7d,
+     0xa5808080, 0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000},
+    {0x00393939,
+     0x00404040, 0x004d4d4d,
+     0x00626262, 0x027b7b7b,
+     0x58808080, 0xe1808080,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000},
+    {0x05808080,
+     0x1b808080, 0x46808080,
+     0x87808080, 0xdd808080,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000, 0xff000000,
+     0xff000000},
+};
+
 // Sort layers by z-index and return sorted indices
 static int sort_layers_by_z(layer_ctx_t *ctx) {
     int sorted_count = 0;
@@ -486,6 +1111,13 @@ int get_top_z_index(layer_ctx_t *ctx) {
 int use_image(layer_ctx_t *ctx, int layer_index, int image_index, float scale) {
     layer_t *layer = &ctx->layers[layer_index];
 
+    int new_width  = images[image_index].width * scale;
+    int new_height = images[image_index].height * scale;
+
+    if (layer->width != new_width || layer->height != new_height) {
+        resize(ctx, layer_index, new_width, new_height);
+    }
+
     if (scale >= 2) {
         for (int y = 0; y < images[image_index].height; y++) {
             for (int x = 0; x < images[image_index].width; x++) {
@@ -518,6 +1150,186 @@ int use_image(layer_ctx_t *ctx, int layer_index, int image_index, float scale) {
                     (y * 2) * images[image_index].width + (x * 2) + 1;
                 int dst_offset = y * (images[image_index].width / 2) + x;
                 layer->buf[dst_offset] = images[image_index].buf[src_offset];
+            }
+        }
+    }
+    mark_dirty(ctx, layer->pos_x, layer->pos_y, layer->width, layer->height);
+    return 0;
+}
+
+int use_char(
+    layer_ctx_t *ctx, int layer_index, char ch, float scale, pixel_t color) {
+    layer_t *layer = &ctx->layers[layer_index];
+
+    assert(ch >= 'a' && ch <= 'z');
+
+    int image_index = RESOURCE_CHAR_A + ch - 'a';
+
+    int new_width  = images[image_index].width * scale;
+    int new_height = images[image_index].height * scale;
+
+    if (layer->width != new_width || layer->height != new_height) {
+        resize(ctx, layer_index, new_width, new_height);
+    }
+
+    if (scale >= 2) {
+        for (int y = 0; y < images[image_index].height; y++) {
+            for (int x = 0; x < images[image_index].width; x++) {
+                int offset = y * images[image_index].width + x;
+                rect(
+                    ctx,
+                    layer_index,
+                    x * scale,
+                    y * scale,
+                    scale,
+                    scale,
+                    images[image_index].buf[offset] | (0x00ffffff & color));
+            }
+        }
+    }
+
+    if (scale == 1) {
+        for (int y = 0; y < images[image_index].height; y++) {
+            for (int x = 0; x < images[image_index].width; x++) {
+                int offset = y * images[image_index].width + x;
+                layer->buf[offset] =
+                    images[image_index].buf[offset] | (0x00ffffff & color);
+            }
+        }
+    }
+
+    if (scale - 0.5 < 0.000001) {
+        for (int y = 0; y < images[image_index].height / 2; y++) {
+            for (int x = 0; x < images[image_index].width / 2; x++) {
+                int src_offset =
+                    (y * 2) * images[image_index].width + (x * 2) + 1;
+                int dst_offset = y * (images[image_index].width / 2) + x;
+                layer->buf[dst_offset] =
+                    images[image_index].buf[src_offset] | (0x00ffffff & color);
+            }
+        }
+    }
+    mark_dirty(ctx, layer->pos_x, layer->pos_y, layer->width, layer->height);
+    return 0;
+}
+
+int use_text(
+    layer_ctx_t *ctx, int layer_index, char *text, float scale, pixel_t color) {
+    layer_t *layer       = &ctx->layers[layer_index];
+    int      text_length = strlen(text);
+
+    int width = 0;
+    for (int i = 0; i < text_length; i++) {
+        char ch          = text[i];
+        int  image_index = 0;
+        // FIXME: number map incorrect. currently remapped for workaround
+        // 0123456789 -> 1234567890
+        if (ch > '0' && ch <= '9') {
+            image_index = RESOURCE_CHAR_0 + ch - '0' - 1;
+        } else if (ch == '0') {
+            image_index = RESOURCE_CHAR_9;
+        } else if (ch >= 'a' && ch <= 'z') {
+            image_index = RESOURCE_CHAR_A + ch - 'a';
+        } else if (ch == '.') {
+            image_index = RESOURCE_CHAR_PERIOD;
+        } else if (ch == '+') {
+            image_index = RESOURCE_CHAR_PLUS;
+        } else if (ch == '-') {
+            image_index = RESOURCE_CHAR_MINUS;
+        } else if (ch == '*') {
+            image_index = RESOURCE_CHAR_TIMES;
+        } else if (ch == '/') {
+            image_index = RESOURCE_CHAR_DIVIDED;
+        } else if (ch == '=') {
+            image_index = RESOURCE_CHAR_EQUAL;
+        } else if (ch == ' ') {
+            image_index = RESOURCE_CHAR_WHITESPACE;
+        }
+        width += images[image_index].width;
+        if (i < text_length - 1) {
+            width += 1; // Add 1 pixel padding between each character
+        }
+    }
+
+    int height = images[RESOURCE_CHAR_A].height;
+
+    int new_width  = width * scale;
+    int new_height = height * scale;
+
+    if (layer->width != new_width || layer->height != new_height) {
+        resize(ctx, layer_index, new_width, new_height);
+    }
+
+    pixel_t *temp = malloc(width * height * 4);
+    memset(temp, 0xff, width * height * 4);
+
+    int current_left_top_x = 0;
+    for (int i = 0; i < text_length; i++) {
+        char ch = text[i];
+        int  image_index;
+        if (ch > '0' && ch <= '9') {
+            image_index = RESOURCE_CHAR_0 + ch - '0' - 1;
+        } else if (ch == '0') {
+            image_index = RESOURCE_CHAR_9;
+        } else if (ch >= 'a' && ch <= 'z') {
+            image_index = RESOURCE_CHAR_A + ch - 'a';
+        } else if (ch == '.') {
+            image_index = RESOURCE_CHAR_PERIOD;
+        } else if (ch == '+') {
+            image_index = RESOURCE_CHAR_PLUS;
+        } else if (ch == '-') {
+            image_index = RESOURCE_CHAR_MINUS;
+        } else if (ch == '*') {
+            image_index = RESOURCE_CHAR_TIMES;
+        } else if (ch == '/') {
+            image_index = RESOURCE_CHAR_DIVIDED;
+        } else if (ch == '=') {
+            image_index = RESOURCE_CHAR_EQUAL;
+        } else if (ch == ' ') {
+            image_index = RESOURCE_CHAR_WHITESPACE;
+        }
+        for (int y = 0; y < images[image_index].height; y++) {
+            for (int x = 0; x < images[image_index].width; x++) {
+                int offset        = y * images[image_index].width + x;
+                int temp_offset   = y * width + current_left_top_x + x;
+                temp[temp_offset] = images[image_index].buf[offset];
+            }
+        }
+        current_left_top_x += images[image_index].width + 1;
+    }
+
+    if (scale >= 2) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int offset = y * width + x;
+                rect(
+                    ctx,
+                    layer_index,
+                    x * scale,
+                    y * scale,
+                    scale,
+                    scale,
+                    temp[offset] | (0x00ffffff & color));
+            }
+        }
+    }
+
+    if (scale == 1) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int offset         = y * width + x;
+                layer->buf[offset] = temp[offset] | (0x00ffffff & color);
+            }
+        }
+    }
+
+    if (scale - 0.5 < 0.000001) {
+        for (int y = 0; y < height / 2; y++) {
+            for (int x = 0; x < width / 2; x++) {
+                int src_offset = (y * 2) * width + (x * 2) + 1;
+                int dst_offset = y * (width / 2) + x;
+                layer->buf[dst_offset] =
+                    temp[src_offset] | (0x00ffffff & color);
             }
         }
     }
@@ -598,33 +1410,97 @@ int rounded_rect(
     int          radius,
     pixel_t      color) {
     assert(radius <= width / 2 && radius <= height / 2);
-    circle(ctx, layer_index, x + radius, y + radius, radius, color);
-    circle(ctx, layer_index, x + width - radius, y + radius, radius, color);
-    circle(ctx, layer_index, x + radius, y + height - radius, radius, color);
-    circle(
-        ctx,
-        layer_index,
-        x + width - radius,
-        y + height - radius,
-        radius,
-        color);
-    rect(
-        ctx, layer_index, x + radius, y + 1, width - radius * 2, radius, color);
-    rect(
-        ctx,
-        layer_index,
-        x + radius,
-        y + height - radius,
-        width - radius * 2,
-        radius,
-        color);
-    rect(
-        ctx,
-        layer_index,
-        x + 1,
-        y + radius,
-        width - 1,
-        height - radius * 2,
-        color);
+    pixel_t *buf = ctx->layers[layer_index].buf;
+
+    if (radius == 11 && color == 0x383838) {
+        // special case for window border
+        rect(ctx, layer_index, x, y, width, height, color);
+        for (int i = 0; i < 11; i++) {
+            for (int j = 0; j < 11; j++) {
+                // FIXME: not blending color, will overwrite previous color
+                buf[(i + y) * (width + 2 * x) + j + x] =
+                    corner_pattern_left_top[i][j];
+                buf[(i + y) * (width + 2 * x) + j + x + width - 11] =
+                    corner_pattern_right_top[i][j];
+                buf[(i + y + height - 11) * (width + 2 * x) + j + x] =
+                    corner_pattern_left_bottom[i][j];
+                buf[(i + y + height - 11) * (width + 2 * x) + j + x + width
+                    - 11] = corner_pattern_right_bottom[i][j];
+            }
+        }
+    } else {
+        circle(ctx, layer_index, x + radius, y + radius, radius, color);
+        circle(ctx, layer_index, x + width - radius, y + radius, radius, color);
+        circle(
+            ctx, layer_index, x + radius, y + height - radius, radius, color);
+        circle(
+            ctx,
+            layer_index,
+            x + width - radius,
+            y + height - radius,
+            radius,
+            color);
+        rect(
+            ctx,
+            layer_index,
+            x + radius,
+            y + 1,
+            width - radius * 2,
+            radius,
+            color);
+        rect(
+            ctx,
+            layer_index,
+            x + radius,
+            y + height - radius,
+            width - radius * 2,
+            radius,
+            color);
+        rect(
+            ctx,
+            layer_index,
+            x + 1,
+            y + radius,
+            width - 1,
+            height - radius * 2,
+            color);
+    }
+    return 0;
+}
+
+// FIXME: only for window border acceleration. Full functionality is not
+// supported yet.
+int rounded_rect_stroke(
+    layer_ctx_t *ctx,
+    int          layer_index,
+    int          x,
+    int          y,
+    int          width,
+    int          height,
+    int          radius,
+    pixel_t      color) {
+    assert(radius <= width / 2 && radius <= height / 2);
+    assert(color == 0x808080);
+    assert(radius == 12);
+    pixel_t *buf = ctx->layers[layer_index].buf;
+
+    // special case for window border
+    rect(ctx, layer_index, x, y, width, 1, color);
+    rect(ctx, layer_index, x, y + height - 1, width, 1, color);
+    rect(ctx, layer_index, x, y + 1, 1, height - 2, color);
+    rect(ctx, layer_index, x + width - 1, y + 1, 1, height - 2, color);
+    for (int i = 0; i < 12; i++) {
+        for (int j = 0; j < 12; j++) {
+            // FIXME: not blending color, will overwrite previous color
+            buf[(i + y) * (width + 2 * x) + j + x] =
+                corner_with_border_left_top[i][j];
+            buf[(i + y) * (width + 2 * x) + j + x + width - 12] =
+                corner_with_border_left_bottom[i][j];
+            buf[(i + y + height - 12) * (width + 2 * x) + j + x] =
+                corner_with_border_right_top[i][j];
+            buf[(i + y + height - 12) * (width + 2 * x) + j + x + width - 12] =
+                corner_with_border_right_bottom[i][j];
+        }
+    }
     return 0;
 }

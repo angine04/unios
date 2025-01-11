@@ -203,7 +203,7 @@ int get_top_z_index(layer_ctx_t *ctx);
  * @param ctx The compositor context
  * @param layer_index The index of the layer
  * @param image_index The index of the image
- * @param scale The scale factor
+ * @param scale The scale factor, possible value: 0.5, 1, 2
  * @return 0 on success, -1 on failure
  */
 int use_image(layer_ctx_t *ctx, int layer_index, int image_index, float scale);
@@ -274,3 +274,43 @@ int rounded_rect(layer_ctx_t *ctx, int layer_index, int x, int y, int width, int
  * @param height The height of the dirty region
  */
 void mark_dirty(layer_ctx_t *ctx, int x, int y, int width, int height);
+
+/*!
+ * @brief Draw a character on a layer
+ * @param ctx The compositor context
+ * @param layer_index The index of the layer
+ * @param ch The character
+ * @param scale The scale factor, possible value: 0.5, 1, 2
+ * @param color The color of the character
+ * @return 0 on success, -1 on failure
+ */
+int use_char(layer_ctx_t *ctx, int layer_index, char ch, float scale, pixel_t color);
+
+/*!
+ * @brief Draw a text on a layer
+ * @param ctx The compositor context
+ * @param layer_index The index of the layer
+ * @param text The text to draw
+ * @param scale The scale factor, possible value: 0.5, 1, 2
+ * @param color The color of the text
+ * @return 0 on success, -1 on failure
+ */
+int use_text(layer_ctx_t *ctx, int layer_index, char *text, float scale, pixel_t color);
+
+/*!
+ * @brief Draw a stroke on a window border
+ *
+ * @attention This function is only for window border acceleration. Full
+ * functionality is not supported yet.
+ *
+ * @param ctx The compositor context
+ * @param layer_index The index of the layer
+ * @param x The x position of the stroke
+ * @param y The y position of the stroke
+ * @param width The width of the stroke
+ * @param height The height of the stroke
+ * @param radius The radius of the stroke
+ * @param color The color of the stroke
+ * @return 0 on success, -1 on failure
+ */
+int rounded_rect_stroke(layer_ctx_t *ctx, int layer_index, int x, int y, int width, int height, int radius, pixel_t color);

@@ -1,4 +1,5 @@
 from PIL import Image
+import os
 
 def image_to_c_array(image_path, image_name, target_width=None, target_height=None):
     # 打开图像
@@ -42,26 +43,32 @@ def image_to_c_array(image_path, image_name, target_width=None, target_height=No
     result += "};"
     return result
 
+# 自动处理所有图像文件
+def process_all_images(directory, target_width=None, target_height=None):
+    for filename in os.listdir(directory):
+        if filename.endswith(".png") or filename.endswith(".jpg"):
+            image_path = os.path.join(directory, filename)
+            image_name = os.path.splitext(filename)[0]
+            c_array = image_to_c_array(image_path, image_name, target_width, target_height)
+
+            # 将结果写入文件
+            output_file = f"{image_name}.res.h"
+            with open(output_file, "w") as f:
+                f.write(c_array)
+            print(f"Generated {output_file}")
+
 # 使用示例
 import sys
-if len(sys.argv) == 3:
-    # 提供图片路径和资源名称
-    image_path = sys.argv[1]
-    image_name = sys.argv[2]
-    c_array = image_to_c_array(image_path, image_name)
-elif len(sys.argv) == 5:
-    # 提供图片路径、资源名称和目标尺寸
-    image_path = sys.argv[1]
-    image_name = sys.argv[2]
-    width = int(sys.argv[3])
-    height = int(sys.argv[4])
-    c_array = image_to_c_array(image_path, image_name, width, height)
+if len(sys.argv) == 2:
+    # 提供目录路径
+    directory = sys.argv[1]
+    process_all_images(directory)
+elif len(sys.argv) == 4:
+    # 提供目录路径和目标尺寸
+    directory = sys.argv[1]
+    width = int(sys.argv[2])
+    height = int(sys.argv[3])
+    process_all_images(directory, width, height)
 else:
-    print("Usage: python icon-gen.py <image_path> <image_name> [width height]")
+    print("Usage: python icon-gen.py <directory> [width height]")
     sys.exit(1)
-
-# 将结果写入文件
-output_file = f"{image_name}.res.h"
-with open(output_file, "w") as f:
-    f.write(c_array)
-print(f"Generated {output_file}")
