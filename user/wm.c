@@ -982,7 +982,8 @@ int ui_create_textbox(int x, int y, int width, int height, int z_index, char *te
     window->contents[free_index].z_index = z_index + 23;
     window->contents[free_index].layer_index = create_layer(layer_ctx, x, y, width, height, z_index);
     fill(layer_ctx, window->contents[free_index].layer_index, background_color);
-    // TODO: text(layer_ctx, window->contents[free_index].layer_index, text, text_color, font_size);
+
+    use_text(layer_ctx, window->contents[free_index].layer_index, text, 1, text_color);
     window->contents[free_index].bandFunction   = NULL;
     window->contents[free_index].belongWindow   = window;
     window->contents[free_index].callbackEnable = false;
@@ -991,8 +992,17 @@ int ui_create_textbox(int x, int y, int width, int height, int z_index, char *te
     return window->contents[free_index].layer_index;
 }
 
-void ui_refresh_textbox(wm_window_t* window, int layer_index, char *text, int background_color, int text_color, int font_size) {
-    // TODO: text(layer_ctx, window->contents[free_index].layer_index, text, text_color, font_size);
+
+
+void ui_refresh_textbox(
+    wm_window_t* window,
+    int          layer_index,
+    char*        text,
+    int          background_color,
+    int          text_color,
+    int          font_size) {
+    use_text(layer_ctx, layer_index, text, 1, text_color);
+    mark_dirty(layer_ctx, window->x, window->y, window->width, window->height);
 }
 
 void ui_show(wm_window_t* window) {
@@ -1046,11 +1056,12 @@ wm_window_t* window = NULL;
 int textbox_id = -1;
 
 void start_proc_calculator(wm_window_t* window) {
-
-    queue = (calculator_queue*)malloc(sizeof(calculator_queue));
-    queue->head = NULL;
-    queue->tail = NULL;
-    screen_text = (char*)malloc(CALCULATOR_SYMBOL_QUEUE_SIZE * sizeof(char));
+    queue          = (calculator_queue*)malloc(sizeof(calculator_queue));
+    queue->head    = NULL;
+    queue->tail    = NULL;
+    screen_text    = (char*)malloc(CALCULATOR_SYMBOL_QUEUE_SIZE * sizeof(char));
+    screen_text[0] = '0';
+    screen_text[1] = '\0';
     wm_window_t* w = ui_create_widget(100, 100, 350, 600);
     window = w;
     ui_create_button(20, 160, 60, 60, 10, "AC", push_calculator_symbol_ac, w);
@@ -1071,7 +1082,8 @@ void start_proc_calculator(wm_window_t* window) {
     ui_create_button(260, 400, 60, 60, 25, "7", push_calculator_symbol_7, w);
     ui_create_button(20, 480, 60, 60, 26, "8", push_calculator_symbol_8, w);
     ui_create_button(260, 480, 60, 60, 27, "9", push_calculator_symbol_9, w);
-    textbox_id = ui_create_textbox(20, 60, 310, 60, 28, screen_text, COLOR_GREY, COLOR_WHITE, 20, w);
+    textbox_id = ui_create_textbox(
+        20, 60, 310, 60, 28, screen_text, COLOR_GREY, COLOR_WHITE, 30, w);
     ui_show(w);
 }
 
