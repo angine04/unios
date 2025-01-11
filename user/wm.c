@@ -1868,7 +1868,7 @@ void start_proc_sysinfo(wm_window_t* window) {
         w->contents[9].height,
         29);
     clear(layer_ctx, w->contents[9].layer_index);
-    use_text(layer_ctx, w->contents[9].layer_index, "version  9.0", 0.5, 0xFFFFFF);
+    use_text(layer_ctx, w->contents[9].layer_index, "version  0.1", 0.5, 0xFFFFFF);
     w->contents[9].bandFunction   = NULL;
     w->contents[9].belongWindow   = w;
     w->contents[9].callbackEnable = false;

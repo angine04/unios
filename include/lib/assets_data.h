@@ -57,6 +57,7 @@
 #include <lib/assets/image_logo.res.h>
 #include <lib/assets/image_cde_logo.res.h>
 
+
 const image_t images[] = {
     {(pixel_t *)icon_unios, 64, 64, true},
     {(pixel_t *)image_wallpaper, 256, 192, false},
@@ -83,7 +84,7 @@ const image_t images[] = {
     {(pixel_t *)char_q, 16, 32, true},
     {(pixel_t *)char_r, 12, 32, true},
     {(pixel_t *)char_s, 14, 32, true},
-    {(pixel_t *)char_t, 12, 32, true},
+    {(pixel_t *)char_letter_t, 12, 32, true},
     {(pixel_t *)char_u, 16, 32, true},
     {(pixel_t *)char_v, 18, 32, true},
     {(pixel_t *)char_w, 24, 32, true},

@@ -1222,8 +1222,12 @@ int use_text(
     for (int i = 0; i < text_length; i++) {
         char ch          = text[i];
         int  image_index = 0;
-        if (ch >= '0' && ch <= '9') {
-            image_index = RESOURCE_CHAR_0 + ch - '0';
+        // FIXME: number map incorrect. currently remapped for workaround
+        // 0123456789 -> 1234567890
+        if (ch > '0' && ch <= '9') {
+            image_index = RESOURCE_CHAR_0 + ch - '0' - 1;
+        } else if (ch == '0') {
+            image_index = RESOURCE_CHAR_9;
         } else if (ch >= 'a' && ch <= 'z') {
             image_index = RESOURCE_CHAR_A + ch - 'a';
         } else if (ch == '.') {
@@ -1263,8 +1267,10 @@ int use_text(
     for (int i = 0; i < text_length; i++) {
         char ch = text[i];
         int  image_index;
-        if (ch >= '0' && ch <= '9') {
-            image_index = RESOURCE_CHAR_0 + ch - '0';
+        if (ch > '0' && ch <= '9') {
+            image_index = RESOURCE_CHAR_0 + ch - '0' - 1;
+        } else if (ch == '0') {
+            image_index = RESOURCE_CHAR_9;
         } else if (ch >= 'a' && ch <= 'z') {
             image_index = RESOURCE_CHAR_A + ch - 'a';
         } else if (ch == '.') {
