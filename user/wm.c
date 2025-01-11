@@ -280,13 +280,12 @@ int main() {
     // test_cursor(layer_ctx, pid);
 
     GUI_init(wm_ctx);
-    wm_window_t* w1 = NULL;
-    w1              = ui_create_widget(400, 100, 400, 300);
-    ui_show(w1);
-    GUI_init(wm_ctx);
-    wm_window_t* w2 = NULL;
-    w2              = ui_create_widget(200, 200, 400, 500);
-    ui_show(w2);
+    // wm_window_t* w1 = NULL;
+    // w1              = ui_create_widget(400, 100, 400, 300);
+    // ui_show(w1);
+    // wm_window_t* w2 = NULL;
+    // w2              = ui_create_widget(200, 200, 400, 500);
+    // ui_show(w2);
 
     while (1) {
         mouse_t mouse  = get_mouse_status();
@@ -911,7 +910,7 @@ wm_window_t* ui_create_widget(int x, int y, int width, int height) {
         /*****title******** */
 
         /*****button******** */
-        w->contents[1].x           = 54;
+        w->contents[1].x           = 42;
         w->contents[1].y           = 6;
         w->contents[1].width       = 12;
         w->contents[1].height      = 12;
@@ -930,7 +929,7 @@ wm_window_t* ui_create_widget(int x, int y, int width, int height) {
         w->contents[1].callbackEnable = true;
         w->contents[1].dynamicSize    = false;
 
-        w->contents[2].x           = 36;
+        w->contents[2].x           = 24;
         w->contents[2].y           = 6;
         w->contents[2].width       = 12;
         w->contents[2].height      = 12;
@@ -949,7 +948,7 @@ wm_window_t* ui_create_widget(int x, int y, int width, int height) {
         w->contents[2].callbackEnable = true;
         w->contents[2].dynamicSize    = false;
 
-        w->contents[3].x           = 18;
+        w->contents[3].x           = 6;
         w->contents[3].y           = 6;
         w->contents[3].width       = 12;
         w->contents[3].height      = 12;
@@ -971,24 +970,24 @@ wm_window_t* ui_create_widget(int x, int y, int width, int height) {
 
         /*****image******** */
 
-        w->contents[4].x           = 24;
-        w->contents[4].y           = 24;
-        w->contents[4].width       = 32;
-        w->contents[4].height      = 32;
-        w->contents[4].z_index     = 23;
-        w->contents[4].layer_index = create_layer(
-            layer_ctx,
-            w->contents[4].x,
-            w->contents[4].y,
-            w->contents[4].width,
-            w->contents[4].height,
-            23);
-        clear(layer_ctx, w->contents[4].layer_index);
-        use_image(layer_ctx, w->contents[4].layer_index, RESOURCE_ICON_BACKSPACE, 0.5);
-        w->contents[4].bandFunction   = NULL;
-        w->contents[4].belongWindow   = w;
-        w->contents[4].callbackEnable = false;
-        w->contents[4].dynamicSize    = false;
+        // w->contents[4].x           = 24;
+        // w->contents[4].y           = 24;
+        // w->contents[4].width       = 32;
+        // w->contents[4].height      = 32;
+        // w->contents[4].z_index     = 23;
+        // w->contents[4].layer_index = create_layer(
+        //     layer_ctx,
+        //     w->contents[4].x,
+        //     w->contents[4].y,
+        //     w->contents[4].width,
+        //     w->contents[4].height,
+        //     23);
+        // clear(layer_ctx, w->contents[4].layer_index);
+        // use_image(layer_ctx, w->contents[4].layer_index,
+        // RESOURCE_ICON_BACKSPACE, 0.5); w->contents[4].bandFunction   = NULL;
+        // w->contents[4].belongWindow   = w;
+        // w->contents[4].callbackEnable = false;
+        // w->contents[4].dynamicSize    = false;
 
         /*****textbox******** */
         return w;
@@ -1760,6 +1759,119 @@ void push_calculator_symbol_9(wm_window_t* window) {
 
 // proc sysinfo
 void start_proc_sysinfo(wm_window_t* window) {
-    wm_window_t* w = ui_create_widget(100, 100, 400, 500);
+    wm_window_t* w             = ui_create_widget(100, 100, 400, 500);
+    w->contents[4].x           = 36;
+    w->contents[4].y           = 36;
+    w->contents[4].width       = 100;
+    w->contents[4].height      = 100;
+    w->contents[4].z_index     = 23;
+    w->contents[4].layer_index = create_layer(
+        layer_ctx,
+        w->contents[4].x,
+        w->contents[4].y,
+        w->contents[4].width,
+        w->contents[4].height,
+        24);
+    clear(layer_ctx, w->contents[4].layer_index);
+    use_text(layer_ctx, w->contents[4].layer_index, "about", 1, 0xFFFFFF);
+    w->contents[4].bandFunction   = NULL;
+    w->contents[4].belongWindow   = w;
+    w->contents[4].callbackEnable = false;
+    w->contents[4].dynamicSize    = false;
+
+    w->contents[5].x           = 36;
+    w->contents[5].y           = 92;
+    w->contents[5].width       = 100;
+    w->contents[5].height      = 100;
+    w->contents[5].z_index     = 23;
+    w->contents[5].layer_index = create_layer(
+        layer_ctx,
+        w->contents[5].x,
+        w->contents[5].y,
+        w->contents[5].width,
+        w->contents[5].height,
+        25);
+    clear(layer_ctx, w->contents[5].layer_index);
+    use_text(layer_ctx, w->contents[5].layer_index, "operating   system", 0.5, 0xFFFFFF);
+    w->contents[5].bandFunction   = NULL;
+    w->contents[5].belongWindow   = w;
+    w->contents[5].callbackEnable = false;
+    w->contents[5].dynamicSize    = false;
+
+    w->contents[6].x           = 36;
+    w->contents[6].y           = 116;
+    w->contents[6].width       = 195;
+    w->contents[6].height      = 40;
+    w->contents[6].z_index     = 23;
+    w->contents[6].layer_index = create_layer(
+        layer_ctx,
+        w->contents[6].x,
+        w->contents[6].y,
+        w->contents[6].width,
+        w->contents[6].height,
+        26);
+    clear(layer_ctx, w->contents[6].layer_index);
+    use_image(layer_ctx, w->contents[6].layer_index, RESOURCE_IMAGE_LOGO, 1);
+    w->contents[6].bandFunction   = NULL;
+    w->contents[6].belongWindow   = w;
+    w->contents[6].callbackEnable = false;
+    w->contents[6].dynamicSize    = false;
+
+    w->contents[7].x           = 36;
+    w->contents[7].y           = 180;
+    w->contents[7].width       = 195;
+    w->contents[7].height      = 40;
+    w->contents[7].z_index     = 23;
+    w->contents[7].layer_index = create_layer(
+        layer_ctx,
+        w->contents[7].x,
+        w->contents[7].y,
+        w->contents[7].width,
+        w->contents[7].height,
+        27);
+    clear(layer_ctx, w->contents[7].layer_index);
+    use_text(layer_ctx, w->contents[7].layer_index, "desktop   environment", 0.5, 0xFFFFFF);
+    w->contents[7].bandFunction   = NULL;
+    w->contents[7].belongWindow   = w;
+    w->contents[7].callbackEnable = false;
+    w->contents[7].dynamicSize    = false;
+
+    w->contents[8].x           = 36;
+    w->contents[8].y           = 200;
+    w->contents[8].width       = 230;
+    w->contents[8].height      = 36;
+    w->contents[8].z_index     = 23;
+    w->contents[8].layer_index = create_layer(
+        layer_ctx,
+        w->contents[8].x,
+        w->contents[8].y,
+        w->contents[8].width,
+        w->contents[8].height,
+        28);
+    clear(layer_ctx, w->contents[8].layer_index);
+    use_image(layer_ctx, w->contents[8].layer_index, RESOURCE_IMAGE_CDE_LOGO, 1);
+    w->contents[8].bandFunction   = NULL;
+    w->contents[8].belongWindow   = w;
+    w->contents[8].callbackEnable = false;
+    w->contents[8].dynamicSize    = false;
+
+    w->contents[9].x           = 36;
+    w->contents[9].y           = 240;
+    w->contents[9].width       = 195;
+    w->contents[9].height      = 40;
+    w->contents[9].z_index     = 23;
+    w->contents[9].layer_index = create_layer(
+        layer_ctx,
+        w->contents[9].x,
+        w->contents[9].y,
+        w->contents[9].width,
+        w->contents[9].height,
+        29);
+    clear(layer_ctx, w->contents[9].layer_index);
+    use_text(layer_ctx, w->contents[9].layer_index, "version  9.0", 0.5, 0xFFFFFF);
+    w->contents[9].bandFunction   = NULL;
+    w->contents[9].belongWindow   = w;
+    w->contents[9].callbackEnable = false;
+    w->contents[9].dynamicSize    = false;
     ui_show(w);
 }

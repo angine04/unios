@@ -1220,11 +1220,11 @@ int use_text(
 
     int width = 0;
     for (int i = 0; i < text_length; i++) {
-        char ch           = text[i];
-        int  image_index  = 0;
+        char ch          = text[i];
+        int  image_index = 0;
         if (ch >= '0' && ch <= '9') {
             image_index = RESOURCE_CHAR_0 + ch - '0';
-        } else if(ch >= 'a' && ch <= 'z') {
+        } else if (ch >= 'a' && ch <= 'z') {
             image_index = RESOURCE_CHAR_A + ch - 'a';
         } else if (ch == '.') {
             image_index = RESOURCE_CHAR_PERIOD;
@@ -1241,7 +1241,7 @@ int use_text(
         } else if (ch == ' ') {
             image_index = RESOURCE_CHAR_WHITESPACE;
         }
-        width            += images[image_index].width;
+        width += images[image_index].width;
         if (i < text_length - 1) {
             width += 1; // Add 1 pixel padding between each character
         }
@@ -1261,11 +1261,11 @@ int use_text(
 
     int current_left_top_x = 0;
     for (int i = 0; i < text_length; i++) {
-        char ch          = text[i];
+        char ch = text[i];
         int  image_index;
         if (ch >= '0' && ch <= '9') {
             image_index = RESOURCE_CHAR_0 + ch - '0';
-        } else if(ch >= 'a' && ch <= 'z') {
+        } else if (ch >= 'a' && ch <= 'z') {
             image_index = RESOURCE_CHAR_A + ch - 'a';
         } else if (ch == '.') {
             image_index = RESOURCE_CHAR_PERIOD;
@@ -1279,8 +1279,7 @@ int use_text(
             image_index = RESOURCE_CHAR_DIVIDED;
         } else if (ch == '=') {
             image_index = RESOURCE_CHAR_EQUAL;
-        }
-        else if (ch == ' ') {
+        } else if (ch == ' ') {
             image_index = RESOURCE_CHAR_WHITESPACE;
         }
         for (int y = 0; y < images[image_index].height; y++) {

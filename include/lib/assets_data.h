@@ -54,6 +54,8 @@
 #include <lib/assets/char_divided.res.h>
 #include <lib/assets/char_equal.res.h>
 #include <lib/assets/char_whitespace.res.h>
+#include <lib/assets/image_logo.res.h>
+#include <lib/assets/image_cde_logo.res.h>
 
 const image_t images[] = {
     {(pixel_t *)icon_unios, 64, 64, true},
@@ -106,4 +108,6 @@ const image_t images[] = {
     {(pixel_t *)char_equal, 16, 32, true},
     {(pixel_t *)char_whitespace, 4, 32, true},
     {(pixel_t *)icon_backspace, 64, 64, true},
+    {(pixel_t *)image_logo, 195, 40, true},
+    {(pixel_t *)image_cde_logo, 230, 36, true},
 };
