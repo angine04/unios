@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <stddef.h>
+#include <sys/defs.h>
 
 #define COLOR_BLACK 			0x000000
 #define COLOR_RED				0xff0000
@@ -20,9 +21,6 @@
 #define COLOR_TEAL			    0x008080
 #define COLOR_SILVER		    0x808080
 #define COLOR_TRANSPARENT	    0xffffffff
-
-#define DISPLAY_WIDTH  1024
-#define DISPLAY_HEIGHT 768
 
 typedef uint32_t pixel_t;
 

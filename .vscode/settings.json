@@ -16,6 +16,8 @@
         "*.ld.inc": "linkerscript",
         "*.h.in": "c",
         "gdb_init_real_mode.txt": "gdb",
+        "graphics.h": "c",
+        "defs.h": "c"
     },
     "[plaintext]": {
         "editor.wordWrap": "on"

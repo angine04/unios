@@ -11,7 +11,7 @@
 #include <malloc.h>
 #include <lib/mouse.h>
 
-#define USE_WALLPAPER 1
+#define USE_WALLPAPER 0
 
 #define WALLPAPER_COLOR 0xB5D4DB
 
@@ -543,7 +543,7 @@ int wm_remove_top_window(wm_ctx_t* ctx) {
         for (int i = 0; i < MAX_CONTENTS; i++) {
             if (p->window->contents[i].layer_index != -1) {
                 // TODO: 精确标记dirty area
-                mark_dirty(ctx->layer_ctx, 0, 0, 1024, 768);
+                mark_dirty(ctx->layer_ctx, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
                 release_layer(
                     ctx->layer_ctx, p->window->contents[i].layer_index);
             }
@@ -642,7 +642,7 @@ int wm_updateTopWindow(wm_ctx_t* ctx, int cursor_x, int cursor_y) {
         p->window->y,
         p->window->x + p->window->width - 1,
         p->window->y + p->window->height - 1);
-    mark_dirty(ctx->layer_ctx, 0, 0, 1024, 768);
+    mark_dirty(ctx->layer_ctx, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
     return HIT_OTHER_WINDOW;
 }
 
@@ -695,7 +695,7 @@ void wm_full_screen(wm_ctx_t* ctx) {
             ctx->topWindow->next_wmN->window->old_height,
             12,
             0x808080);
-        mark_dirty(ctx->layer_ctx, 0, 0, 1024, 768);
+        mark_dirty(ctx->layer_ctx, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
     } else {
         ctx->topWindow->next_wmN->window->is_full_screen = true;
         ctx->topWindow->next_wmN->window->x              = 0;
@@ -754,7 +754,7 @@ void wm_full_screen(wm_ctx_t* ctx) {
             SCREEN_HEIGHT,
             12,
             0x808080);
-        mark_dirty(ctx->layer_ctx, 0, 0, 1024, 768);
+        mark_dirty(ctx->layer_ctx, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
     }
 }
 

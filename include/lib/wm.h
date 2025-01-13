@@ -134,8 +134,8 @@ void wm_move_top_window(wm_ctx_t* ctx);
 
 
 /* ******************GUI*********************** */
-#define SCREEN_WIDTH 1024
-#define SCREEN_HEIGHT 768
+#define SCREEN_WIDTH DISPLAY_WIDTH
+#define SCREEN_HEIGHT DISPLAY_HEIGHT
 #define MIN_WIDGET_WIDTH 10
 #define MIN_WIDGET_HEIGHT 10
 #define STANDARD_WIDGET_LAYER_COUNT 4
