@@ -11,7 +11,7 @@
 #include <malloc.h>
 #include <lib/mouse.h>
 
-#define USE_WALLPAPER 0
+#define USE_WALLPAPER 1
 
 #define WALLPAPER_COLOR 0xB5D4DB
 
