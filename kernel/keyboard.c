@@ -1,6 +1,7 @@
 #include <unios/keyboard.h>
 #include <unios/interrupt.h>
 #include <unios/keymap.h>
+#include <unios/schedule.h>
 #include <arch/x86.h>
 #include <sys/defs.h>
 #include <unios/tracing.h>
