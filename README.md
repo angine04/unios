@@ -138,6 +138,6 @@ make mon
 
 # Contributors
 
-See [Contributing](https://github.com/zymelaii/uniform-minios/graphs/contributors) for details. Thanks to all the people who already contributed!
+See [Contributing](https://github.com/angine04/unios/graphs/contributors) for details. Thanks to all the people who already contributed!
 
-![Contributors](https://contributors-img.web.app/image?repo=zymelaii/uniform-minios&max=500)
+![Contributors](https://contributors-img.web.app/image?repo=angine04/unios&max=500)
