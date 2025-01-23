@@ -139,6 +139,6 @@ make mon
 
 # 贡献者
 
-感谢所有对 unios 做出贡献的人员！🚪 [贡献详情](https://github.com/zymelaii/uniform-minios/graphs/contributors)
+感谢所有对 unios 做出贡献的人员！🚪 [贡献详情](https://github.com/angine04/unios/graphs/contributors)
 
-![贡献者列表](https://contributors-img.web.app/image?repo=zymelaii/uniform-minios&max=500)
+![贡献者列表](https://contributors-img.web.app/image?repo=angine04/unios&max=500)
