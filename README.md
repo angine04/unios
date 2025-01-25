@@ -4,9 +4,11 @@
 
 <div align="center">
 
-# uniform-minios
+![unios logo](https://github.com/user-attachments/assets/d357bf4e-15df-4f97-8c96-a66e4a55cdf1)
 
-uniform-minios, namely unios, is a much more consistent impl of NWPU miniOS.
+# unios
+
+unios, a consistent fork of NWPU miniOS.
 
 [Learn about unios](#learn-about-unios) •
 [Installation](#installation) •
@@ -17,7 +19,7 @@ uniform-minios, namely unios, is a much more consistent impl of NWPU miniOS.
 
 # Learn about unios
 
-unios, full name uniform-miniOS, is derived from nwpu miniOS. unios aims to provide a more consistent implementation of nwpu miniOS in terms of structure, coding, etc.
+unios is derived from nwpu miniOS. unios aims to provide a more consistent implementation of nwpu miniOS in terms of structure, coding, etc.
 
 # Installation
 
